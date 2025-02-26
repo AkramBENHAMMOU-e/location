@@ -8,8 +8,6 @@
     @apply bg-gradient-to-r from-blue-500 to-red-500 bg-clip-text text-transparent;
   }
 }
-// Ajouter ce style global dans index.html
-
   body {
     overflow-x: hidden;
   }

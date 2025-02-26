@@ -1,7 +1,7 @@
 import React, { useState, useEffect ,useLayoutEffect,useRef} from 'react';
 import "./App.css"
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaWhatsapp, FaTimes, FaBars } from "react-icons/fa";
 import { 
   Car, 
   Sun, 
@@ -36,6 +36,7 @@ const App = () => {
   const [currentCarIndex, setCurrentCarIndex] = useState(0);
   const [autoScroll, setAutoScroll] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('Tous');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const cars = [
     {
@@ -232,6 +233,7 @@ const phoneNumber = '212771764448';
   const Header = () => {
     // Fonction pour le défilement fluide
     const smoothScroll = (id) => {
+      setIsMenuOpen(false);
       const element = document.getElementById(id);
       if (element) {
         element.scrollIntoView({
@@ -244,17 +246,20 @@ const phoneNumber = '212771764448';
   
     return (
       <header className={`fixed w-full z-50 backdrop-blur-md border-b ${darkMode ? 'bg-gray-900/90 border-gray-800' : 'bg-white/90 border-gray-100'}`}>
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <nav className="flex items-center justify-between">
+            {/* Logo */}
             <motion.div whileHover={{ scale: 1.05 }} className="flex items-center space-x-3">
               <img 
                 src={Logo}
                 alt="Luxury Drive" 
-                className="h-14 w-auto filter brightness-125 drop-shadow-lg cursor-pointer"
+                className="h-12 w-auto filter brightness-125 drop-shadow-lg cursor-pointer"
                 onClick={() => smoothScroll('hero')}
               />
             </motion.div>
-            <div className="hidden md:flex items-center space-x-8">
+
+            {/* Menu Desktop */}
+            <div className="hidden md:flex items-center space-x-6">
               {[
                 { name: 'Nos voitures', id: 'fleet' },
                 { name: 'Avantages', id: 'features' },
@@ -283,33 +288,80 @@ const phoneNumber = '212771764448';
                 )}
               </motion.button>
             </div>
+
+          {/* Menu Mobile */}
+            <div className="md:hidden flex items-center space-x-4">
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="p-2 rounded-full bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-sm"
+              >
+                {darkMode ? (
+                  <Sun className="w-5 h-5 text-amber-400" />
+                ) : (
+                  <Moon className="w-5 h-5 text-gray-600" />
+                )}
+              </button>
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 text-gray-600 dark:text-gray-300"
+              >
+                {isMenuOpen ? <FaTimes className="w-6 h-6" /> : <FaBars className="w-6 h-6" />}
+              </button>
+            </div>
           </nav>
+
+          {/* Menu Mobile Dropdown */}
+          <AnimatePresence>
+            {isMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="md:hidden mt-4 space-y-4 pb-4"
+              >
+                {[
+                  { name: 'Nos voitures', id: 'fleet' },
+                  { name: 'Avantages', id: 'features' },
+                  { name: 'Témoignages', id: 'testimonials' },
+                  { name: 'Contact', id: 'contact' }
+                ].map((item) => (
+                  <motion.button
+                    key={item.id}
+                    onClick={() => smoothScroll(item.id)}
+                    className="block w-full text-left px-4 py-2 text-gray-600 dark:text-gray-300 font-medium"
+                  >
+                    {item.name}
+                  </motion.button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </header>
     );
   };
 
+
   const Hero = () => {
-    // Animation variants for smooth transitions
     const fadeInUp = {
       initial: { opacity: 0, y: 20 },
       animate: { opacity: 1, y: 0, transition: { duration: 0.6 } }
     };
   
     return (
-      <section className="pt-32 pb-24 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
+      <section id="hero" className="pt-28 pb-16 md:pt-32 md:pb-24 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentCarIndex}
-              className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
+              className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
             >
-              {/* Left side content */}
-              <div className="space-y-10">
+              {/* Left Content */}
+              <div className="space-y-6 md:space-y-10 order-2 lg:order-1">
                 <motion.div 
                   className="inline-flex items-center space-x-3 bg-gradient-to-r from-[#d4af37]/20 to-red-600/20 px-5 py-3 rounded-full backdrop-blur-sm"
                   {...fadeInUp}
@@ -319,158 +371,110 @@ const phoneNumber = '212771764448';
                     Disponible maintenant
                   </span>
                 </motion.div>
-                
+  
                 <motion.h1 
-                  className="text-6xl lg:text-7xl font-bold leading-tight bg-gradient-to-r from-gray-800 dark:from-gray-100 to-[#d4af37] bg-clip-text text-transparent"
+                  className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight bg-gradient-to-r from-gray-800 dark:from-gray-100 to-[#d4af37] bg-clip-text text-transparent"
                   {...fadeInUp}
                   transition={{ delay: 0.1 }}
                 >
                   {cars[currentCarIndex].name}
-                  <span className="block mt-4 text-2xl font-medium text-gray-600 dark:text-gray-300">
+                  <span className="block mt-2 md:mt-4 text-lg md:text-xl lg:text-2xl font-medium text-gray-600 dark:text-gray-300">
                     {cars[currentCarIndex].description}
                   </span>
                 </motion.h1>
-                
+  
                 <motion.div 
-                  className="grid grid-cols-2 md:grid-cols-3 gap-4"
+                  className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4"
                   {...fadeInUp}
                   transition={{ delay: 0.2 }}
                 >
-                  <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-850' : 'bg-white'} shadow-lg border border-gray-100 dark:border-gray-700`}>
-                    <div className="flex items-center space-x-2 text-red-500 mb-2">
-                      <Car className="w-5 h-5" />
-                      <span className="text-sm text-gray-500 dark:text-gray-400">Puissance</span>
+                  {/* Specs Cards */}
+                  {[
+                    { icon: <Car />, label: 'Puissance', value: cars[currentCarIndex].power },
+                    { icon: <Clock />, label: '0-100 km/h', value: cars[currentCarIndex].acceleration },
+                    { icon: <Settings />, label: 'Consommation', value: cars[currentCarIndex].consumption }
+                  ].map((spec, i) => (
+                    <div 
+                      key={i}
+                      className={`p-3 md:p-4 rounded-xl ${darkMode ? 'bg-gray-850' : 'bg-white'} shadow-md border border-gray-100 dark:border-gray-700`}
+                    >
+                      <div className="flex items-center space-x-2 text-red-500 mb-2">
+                        {spec.icon}
+                        <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                          {spec.label}
+                        </span>
+                      </div>
+                      <div className="text-base md:text-lg font-bold">
+                        {spec.value}
+                      </div>
                     </div>
-                    <div className="text-lg font-bold">{cars[currentCarIndex].power}</div>
-                  </div>
-                  <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-850' : 'bg-white'} shadow-lg border border-gray-100 dark:border-gray-700`}>
-                    <div className="flex items-center space-x-2 text-[#d4af37] mb-2">
-                      <Clock className="w-5 h-5" />
-                      <span className="text-sm text-gray-500 dark:text-gray-400">0-100 km/h</span>
-                    </div>
-                    <div className="text-lg font-bold">{cars[currentCarIndex].acceleration}</div>
-                  </div>
-                  <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-850' : 'bg-white'} shadow-lg border border-gray-100 dark:border-gray-700`}>
-                    <div className="flex items-center space-x-2 text-black-500 mb-2">
-                      <Settings className="w-5 h-5" />
-                      <span className="text-sm text-gray-500 dark:text-gray-400">Consommation</span>
-                    </div>
-                    <div className="text-lg font-bold">{cars[currentCarIndex].consumption}</div>
-                  </div>
+                  ))}
                 </motion.div>
-                
+  
                 <motion.div 
-                  className="flex flex-col sm:flex-row gap-4"
+                  className="flex flex-col sm:flex-row gap-3 md:gap-4"
                   {...fadeInUp}
                   transition={{ delay: 0.3 }}
                 >
                   <button
                     onClick={() => handleWhatsAppReservation(cars[currentCarIndex].name)}
-                    className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 
-    text-white rounded-lg shadow-md shadow-green-500/20 hover:shadow-emerald-600/30 
-    transition-all duration-200 text-white rounded-xl
-                    hover:scale-105 transition-all shadow-lg  font-medium"
+                    className="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg 
+                    text-sm md:text-base font-medium hover:shadow-lg transition-all"
                   >
                     Réserver maintenant →
                   </button>
-                  <div className="flex items-center justify-center space-x-2 px-6 py-4 border 
-                  rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 border-gray-200 dark:border-gray-700">
-                    <span className='dark:text-gray-500'>À partir de</span>
-                    <span className="text-2xl font-bold text-red-400">
+                  <div className="flex items-center justify-center space-x-2 px-4 py-3 md:px-6 md:py-4 border 
+                  rounded-lg hover:bg-gray-50 dark:hover:bg-gray-850 border-gray-200 dark:border-gray-700">
+                    <span className="text-xs md:text-sm dark:text-gray-400">À partir de</span>
+                    <span className="text-xl md:text-2xl font-bold text-red-400">
                       {cars[currentCarIndex].price}DH
                     </span>
-                    <span className='dark:text-gray-500'>/jour</span>
+                    <span className="text-xs md:text-sm dark:text-gray-400">/jour</span>
                   </div>
                 </motion.div>
               </div>
-              
-              {/* Right side - Car Display */}
-              <div className="relative group">
-                {/* Main Car Image with 3D Effect */}
+  
+              {/* Right Image */}
+              <div className="relative group order-1 lg:order-2">
                 <motion.div
-                  className="relative rounded-3xl overflow-hidden"
+                  className="relative rounded-2xl lg:rounded-3xl overflow-hidden"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.5 }}
                   style={{ perspective: '1000px', transformStyle: 'preserve-3d' }}
                 >
-                  {/* Customized car images based on car type */}
-                  {cars[currentCarIndex].brand === "huandai" && (
-                    <div className="relative w-full h-64 md:h-96">
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-100 dark:to-gray-900 opacity-50 rounded-3xl"></div>
+                  {/* Dynamic Car Image */}
+                  <div className="relative w-full h-64 sm:h-80 md:h-96">
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-100 dark:to-gray-900 opacity-50 rounded-2xl" />
+                    <img
+                      src={
+                        cars[currentCarIndex].brand === "huandai" ? Huandai :
+                        cars[currentCarIndex].brand === "Dacia" ? Dacia :
+                        Touarg
+                      }
+                      alt={cars[currentCarIndex].name}
+                      className="w-full h-full object-contain rounded-2xl transform transition-transform duration-300"
+                    />
+                    <motion.div
+                      className="absolute top-3 right-3 md:top-4 md:right-4 bg-white dark:bg-gray-900 p-1.5 md:p-2 rounded-full shadow-lg"
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.6 }}
+                    >
                       <img
-                        src={Huandai}
-                        alt={cars[currentCarIndex].name}
-                        className="w-full h-full object-contain rounded-3xl transform transition-transform duration-300 hover:scale-105"
-                        style={{ transform: 'translateZ(20px)' }}
+                        src={
+                          cars[currentCarIndex].brand === "huandai" ? HuandaiLogo :
+                          cars[currentCarIndex].brand === "Dacia" ? DaciaLogo :
+                          TouargLogo
+                        }
+                        alt="Logo"
+                        className="w-8 h-8 md:w-10 md:h-10 object-contain"
                       />
-                      <motion.div
-                        className="absolute top-4 right-4 bg-white dark:bg-gray-900 p-2 rounded-full shadow-xl"
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.6, duration: 0.3 }}
-                      >
-                        <img
-                          src={HuandaiLogo}
-                          alt="Huandai Logo"
-                          className="w-10 h-10 object-contain"
-                        />
-                      </motion.div>
-                    </div>
-                  )}
-                  
-                  {cars[currentCarIndex].brand === "Volswagen" && (
-                    <div className="relative w-full h-64 md:h-96">
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-100 dark:to-gray-900 opacity-50 rounded-3xl"></div>
-                      <img
-                        src={Touarg}
-                        alt={cars[currentCarIndex].name}
-                        className="w-full h-full object-contain rounded-3xl transform transition-transform duration-300 hover:scale-105"
-                        style={{ transform: 'translateZ(20px)' }}
-                      />
-                      <motion.div
-                        className="absolute top-4 right-4 bg-white dark:bg-gray-900 p-2 rounded-full shadow-xl"
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.6, duration: 0.3 }}
-                      >
-                        <img
-                          src={TouargLogo}
-                          alt="touarg Logo"
-                          className="w-10 h-10 object-contain"
-                        />
-                      </motion.div>
-                    </div>
-                  )}
-                  
-                  {cars[currentCarIndex].brand === "Dacia" && (
-                    <div className="relative w-full h-64 md:h-96">
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-100 dark:to-gray-900 opacity-50 rounded-3xl"></div>
-                      <img
-                        src={Dacia}
-                        alt={cars[currentCarIndex].name}
-                        className="w-full h-full object-contain rounded-3xl transform transition-transform duration-300 hover:scale-105"
-                        style={{ transform: 'translateZ(20px)' }}
-                      />
-                      <motion.div
-                        className="absolute top-4 right-4 bg-white dark:bg-gray-900 p-2 rounded-full shadow-xl"
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.6, duration: 0.3 }}
-                      >
-                        <img
-                          src={DaciaLogo}
-                          alt="Dacia Logo"
-                          className="w-10 h-10 object-contain"
-                        />
-                      </motion.div>
-                    </div>
-                  )}
+                    </motion.div>
+                  </div>
                 </motion.div>
-                
-                {/* Enhanced Car Selection Thumbnails */}
-                <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 flex items-center justify-center space-x-6">
+  
+                {/* Car Selection Thumbnails */}
+                <div className="absolute -bottom-14 md:-bottom-16 left-1/2 transform -translate-x-1/2 flex space-x-3 md:space-x-4 overflow-x-auto pb-2 px-2">
                   {cars.map((car, index) => (
                     <motion.button
                       key={car.id}
@@ -478,87 +482,56 @@ const phoneNumber = '212771764448';
                         setAutoScroll(false);
                         setCurrentCarIndex(index);
                       }}
-                      whileHover={{ scale: 1.1, y: -5 }}
-                      className={`w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-lg flex items-center justify-center transition-all ${
+                      whileHover={{ scale: 1.1 }}
+                      className={`min-w-[70px] md:min-w-[90px] h-[70px] md:h-[90px] rounded-xl flex items-center justify-center 
+                      shadow-lg transition-all ${
                         currentCarIndex === index 
-                          ? 'ring-4 ring-yellow-500 scale-110 shadow-xl shadow-yellow-500/20' 
+                          ? 'ring-2 md:ring-4 ring-yellow-500 scale-110' 
                           : 'opacity-70 hover:opacity-100'
-                      }`}
+                      } ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
                     >
-                      {/* Customized brand logos */}
-                      {car.brand === "huandai" && (
-                        <div className="w-16 h-16 flex items-center justify-center">
-                          <img
-                            src={HuandaiLogo}
-                            alt="Huandai Logo"
-                            className="w-12 h-12 object-contain"
-                          />
-                        </div>
-                      )}
-                      
-                      {car.brand === "Dacia" && (
-                        <div className="w-16 h-16 flex items-center justify-center">
-                          <img
-                            src={DaciaLogo}
-                            alt="Dacia Logo"
-                            className="w-12 h-12 object-contain"
-                          />
-                        </div>
-                      )}
-                      
-                      {car.brand === "Volswagen" && (
-                        <div className="w-16 h-16 flex items-center justify-center">
-                          <img
-                            src={TouargLogo}
-                            alt="Touarg Logo"
-                            className="w-12 h-12 object-contain"
-                          />
-                        </div>
-                      )}
+                      <img
+                        src={
+                          car.brand === "huandai" ? HuandaiLogo :
+                          car.brand === "Dacia" ? DaciaLogo :
+                          TouargLogo
+                        }
+                        alt="Logo"
+                        className="w-12 h-12 md:w-16 md:h-16 object-contain p-1.5"
+                      />
                     </motion.button>
                   ))}
                 </div>
-                
-                
-                {/* Color variants for Mercedes */}
-                {cars[currentCarIndex].brand === "huandai" && (
+  
+                {/* Color Variants */}
+                {["huandai", "Dacia", "Volswagen"].includes(cars[currentCarIndex].brand) && (
                   <motion.div 
-                    className="absolute bottom-8 left-8 flex items-center space-x-3"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7, duration: 0.5 }}
+                    className="absolute bottom-4 left-4 flex items-center space-x-2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7 }}
                   >
-                    <button className="w-8 h-8 rounded-full bg-gray-900 border-2 border-white shadow-lg"></button>
-                    <button className="w-8 h-8 rounded-full bg-red-600 border-2 border-white shadow-lg"></button>
-                    <button className="w-8 h-8 rounded-full bg-black-600 border-2 border-white shadow-lg"></button>
-                  </motion.div>
-                )}
-                
-                {/* Color variants for Tesla */}
-                {cars[currentCarIndex].brand === "Dacia" && (
-                  <motion.div 
-                    className="absolute bottom-8 left-8 flex items-center space-x-3"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7, duration: 0.5 }}
-                  >
-                    <button className="w-8 h-8 rounded-full bg-orange-500 border-2 border-gray-200 shadow-lg"></button>
-                    <button className="w-8 h-8 rounded-full bg-black border-2 border-white shadow-lg"></button>
-                    <button className="w-8 h-8 rounded-full bg-gray-400 border-2 border-white shadow-lg"></button>
-                  </motion.div>
-                )}
-                
-                {/* Color variants for Porsche */}
-                {cars[currentCarIndex].brand === "Volswagen" && (
-                  <motion.div 
-                    className="absolute bottom-8 left-8 flex items-center space-x-3"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7, duration: 0.5 }}
-                  >
-                    <button className="w-8 h-8 rounded-full bg-gray-500 border-2 border-white shadow-lg"></button>
-                    <button className="w-8 h-8 rounded-full bg-black border-2 border-gray-300 shadow-lg"></button>
-                    <button className="w-8 h-8 rounded-full bg-white border-2 border-white shadow-lg"></button>
+                    {cars[currentCarIndex].brand === "huandai" && (
+                      <>
+                        <button className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-gray-900 border-2 border-white" />
+                        <button className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-red-600 border-2 border-white" />
+                        <button className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-slate-700 border-2 border-white" />
+                      </>
+                    )}
+                    {cars[currentCarIndex].brand === "Dacia" && (
+                      <>
+                        <button className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-blue-500 border-2 border-white" />
+                        <button className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-black border-2 border-white" />
+                        <button className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-gray-400 border-2 border-white" />
+                      </>
+                    )}
+                    {cars[currentCarIndex].brand === "Volswagen" && (
+                      <>
+                        <button className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-gray-500 border-2 border-white" />
+                        <button className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-black border-2 border-white" />
+                        <button className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white border-2 border-gray-300" />
+                      </>
+                    )}
                   </motion.div>
                 )}
               </div>
@@ -568,6 +541,8 @@ const phoneNumber = '212771764448';
       </section>
     );
   };
+  
+  
   const Fleet = () => {
     const [reviewsCount, setReviewsCount] = useState(() => {
       const stored = localStorage.getItem('reviewsCount');
@@ -633,20 +608,20 @@ const phoneNumber = '212771764448';
     'Renault': RenaultLogo
   };
   return (
-    <section id="fleet" ref={fleetRef} className="py-16 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-gray-100">
+    <section id="fleet" ref={fleetRef} className="py-8 sm:py-16 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-12 text-gray-900 dark:text-gray-100">
           Notre flotte de véhicules
         </h2>
 
-        {/* Sélecteur de marque */}
-        <div className="mb-8 flex flex-wrap justify-center gap-4 md:gap-6">
+        {/* Sélecteur de marque - version mobile optimisée avec défilement horizontal */}
+        <div className="mb-6 sm:mb-8 flex overflow-x-auto pb-2 sm:flex-wrap sm:justify-center sm:overflow-visible gap-2 sm:gap-4 md:gap-6 hide-scrollbar">
           {brands.map((brand) => (
             <motion.button
               key={brand}
               onClick={() => handleBrandSelect(brand)}
               whileHover={{ scale: 1.05 }}
-              className={`flex flex-col items-center p-3 md:p-4 rounded-xl transition-all ${
+              className={`flex-shrink-0 flex flex-col items-center p-2 sm:p-3 md:p-4 rounded-xl transition-all ${
                 selectedBrand === brand 
                   ? 'bg-white dark:bg-gray-800 shadow-lg border-2 border-red-500'
                   : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 border-2 border-transparent'
@@ -655,71 +630,71 @@ const phoneNumber = '212771764448';
               <img 
                 src={logoMap[brand]} 
                 alt={brand} 
-                className="h-10 w-10 md:h-12 md:w-12 object-contain mb-2"
+                className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 object-contain mb-1 sm:mb-2"
               />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+              <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300">
                 {brand}
               </span>
             </motion.button>
           ))}
         </div>
 
-        {/* Liste des véhicules */}
+        {/* Liste des véhicules - 2 colonnes sur mobile */}
         {filteredCars.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {filteredCars.map((car) => (
               <motion.div
                 key={car.id}
-                whileHover={{ y: -10 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-700"
+                whileHover={{ y: -5, scale: 1.02 }}
+                className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-700"
               >
-                <div className="relative h-48">
+                <div className="relative h-28 sm:h-48">
                   <img src={car.image} alt={car.name} className="w-full h-full object-contain" />
-                  <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    {car.price}DH/jour
+                  <div className="absolute top-1 sm:top-4 right-1 sm:right-4 bg-red-500 text-white px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
+                    {car.price}DH/j
                   </div>
-                  <div className="absolute top-4 left-4 bg-white dark:bg-gray-800 p-2 rounded-full shadow-md">
-                    <img src={car.logo} alt={`${car.brand} Logo`} className="w-8 h-8 object-contain" />
+                  <div className="absolute top-1 sm:top-4 left-1 sm:left-4 bg-white dark:bg-gray-800 p-1 sm:p-2 rounded-full shadow-md">
+                    <img src={car.logo} alt={`${car.brand} Logo`} className="w-4 h-4 sm:w-8 sm:h-8 object-contain" />
                   </div>
                 </div>
                 
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2 text-gray-800 dark:text-gray-200">{car.name}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">{car.description}</p>
+                <div className="p-2 sm:p-6">
+                  <h3 className="text-sm sm:text-xl font-bold mb-1 sm:mb-2 text-gray-800 dark:text-gray-200 line-clamp-1">{car.name}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-2 sm:mb-4 line-clamp-2 sm:line-clamp-3">{car.description}</p>
                   
-                  <div className="grid grid-cols-2 gap-2 mb-4">
+                  <div className="grid grid-cols-2 gap-1 sm:gap-2 mb-2 sm:mb-4">
                     <div className="flex items-center">
-                      <Clock className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
-                      <span className="text-sm">{car.acceleration}</span>
+                      <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
+                      <span className="text-xs sm:text-sm">{car.acceleration}</span>
                     </div>
                     <div className="flex items-center">
-                      <Settings className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
-                      <span className="text-sm">{car.consumption}</span>
+                      <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
+                      <span className="text-xs sm:text-sm">{car.consumption}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center mb-4">
+                  <div className="flex items-center mb-2 sm:mb-4">
                     <button 
                       onClick={() => handleStarClick(car.id)}
                       disabled={hasUserVoted(car.id)}
                       className={`transition-all ${hasUserVoted(car.id) ? 'opacity-75' : 'hover:scale-110'}`}
                     >
                       <Star
-                        className="w-6 h-6"
+                        className="w-4 h-4 sm:w-6 sm:h-6"
                         fill={hasUserVoted(car.id) ? "gold" : "none"}
                         stroke={darkMode ? "gold" : "currentColor"}
                       />
                     </button>
-                    <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                       {reviewsCount[car.id] || 0} votes
                     </span>
                   </div>
 
                   <button
                     onClick={() => handleWhatsAppReservation(car.name)}
-                    className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors flex items-center justify-center space-x-2 font-medium"
+                    className="w-full py-1.5 sm:py-3 text-xs sm:text-base bg-green-500 hover:bg-green-600 text-white rounded-lg sm:rounded-xl transition-colors flex items-center justify-center space-x-1 sm:space-x-2 font-medium"
                   >
-                    <Car className="w-5 h-5" />
+                    <Car className="w-3 h-3 sm:w-5 sm:h-5" />
                     <span>Réserver</span>
                   </button>
                 </div>
@@ -727,14 +702,14 @@ const phoneNumber = '212771764448';
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🚗</div>
-            <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <div className="text-center py-8 sm:py-12">
+            <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🚗</div>
+            <h3 className="text-lg sm:text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
               Aucune voiture trouvée dans cette catégorie
             </h3>
             <button 
               onClick={() => handleBrandSelect('Tous')}
-              className="mt-4 px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              className="mt-3 sm:mt-4 px-4 sm:px-5 py-2 text-sm sm:text-base bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
             >
               Voir toutes les voitures
             </button>

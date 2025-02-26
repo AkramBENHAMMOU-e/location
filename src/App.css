@@ -1,6 +1,35 @@
 
-
-
 html {
   overflow-anchor: none;
+}
+@media (max-width: 640px) {
+  .car-thumbnails {
+    max-width: 90vw;
+    overflow-x: auto;
+  }
+  
+  .testimonial-card {
+    margin: 0 1rem;
+  }
+  
+  .map-iframe {
+    height: 300px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hero-content {
+    padding-top: 2rem;
+  }
+  
+  .fleet-card {
+    min-height: 400px;
+  }
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
 }
