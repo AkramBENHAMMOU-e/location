@@ -340,7 +340,7 @@ const AdminDashboard = () => {
                                             {cars.sort((a, b) => b.reservations_count - a.reservations_count).slice(0, 3).map(car => (
                                                 <div key={car.id} className="flex items-center mb-4 pb-4 border-b dark:border-gray-700 last:border-0 last:pb-0 last:mb-0">
                                                     <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
-                                                        <img src={`http://localhost:5000/${car.image_url}`} alt={car.name} />
+                                                        <img src={car.image_url} alt={car.name} className="w-full h-full object-cover" />
                                                     </div>
                                                     <div className="ml-4 flex-1">
                                                         <h3 className="font-medium">{car.name}</h3>
@@ -380,9 +380,9 @@ const AdminDashboard = () => {
                                                         <td className="py-3 px-4">{car.id}</td>
                                                         <td className="py-3 px-4">
                                                             <div className="flex items-center">
-                                                                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-md overflow-hidden flex-shrink-0">
-                                                                    <img src={`http://localhost:5000/${car.image_url}`} alt={car.name} />
-                                                                </div>
+                                                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-md overflow-hidden flex-shrink-0">
+                                                                <img src={car.image_url} alt={car.name} className="w-full h-full object-cover" />
+                                                            </div>
                                                                 <span className="ml-3">{car.name}</span>
                                                             </div>
                                                         </td>

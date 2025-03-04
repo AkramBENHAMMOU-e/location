@@ -472,9 +472,9 @@ const handleLogoClick = () => {
     
         const getCarImage = (car) => {
             if (car.image_url) {
-                return `http://localhost:5000/${car.image_url}`;
+                return car.image_url; // Use the full Cloudinary URL directly
             }
-            
+        
             const brand = car.brand?.toLowerCase();
             const imageMap = {
                 'dacia': Dacia,
@@ -482,8 +482,8 @@ const handleLogoClick = () => {
                 'tesla': Tesla,
                 'volkswagen': Touarg
             };
-            
-            return imageMap[brand] || Dacia;
+        
+            return imageMap[brand] || Dacia; // Fallback for default images
         };
     
         return (
@@ -802,26 +802,26 @@ const handleLogoClick = () => {
                                 className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-700"
                             >
                                 <div className="relative h-28 sm:h-48">
-                                    {car.image_url ? (
-                                        <img 
-                                            src={`http://localhost:5000/${car.image_url}`} 
-                                            alt={car.name} 
-                                            className="w-full h-full object-contain"
-                                            onError={(e) => { e.target.style.display = 'none'; }}
-                                        />
-                                    ) : (
-                                        <img 
-                                            src={
-                                                car.brand === "dacia" ? Dacia :
-                                                car.brand === "renault" ? Clio :
-                                                car.brand === "tesla" ? Tesla :
-                                                car.brand === "volkswagen" ? Touarg :
-                                                Dacia // Default fallback
-                                            }
-                                            alt={car.name}
-                                            className="w-full h-full object-contain"
-                                        />
-                                    )}
+                                {car.image_url ? (
+        <img 
+            src={car.image_url} // Use Cloudinary URL directly
+            alt={car.name} 
+            className="w-full h-full object-contain"
+            onError={(e) => { e.target.style.display = 'none'; }}
+        />
+    ) : (
+        <img 
+            src={
+                car.brand === "dacia" ? Dacia :
+                car.brand === "renault" ? Clio :
+                car.brand === "tesla" ? Tesla :
+                car.brand === "volkswagen" ? Touarg :
+                Dacia // Default fallback
+            }
+            alt={car.name}
+            className="w-full h-full object-contain"
+        />
+    )}
                                     <div className="absolute top-1 sm:top-4 right-1 sm:right-4 bg-red-500 text-white px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
                                         {car.price}DH/j
                                     </div>
