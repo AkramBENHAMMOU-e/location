@@ -19,7 +19,7 @@ export function DataProvider({ children }) {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_BASE_URL = 'http://localhost:5000/api';
+  const API_BASE_URL = 'https://luxury-drive-back.onrender.com//api';
 
   const fetchData = async () => {
     setIsLoading(true);
