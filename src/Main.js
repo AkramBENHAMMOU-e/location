@@ -54,6 +54,29 @@ const formatDateForMySQL = (isoDate) => {
 
 
 
+
+const Main = () => {
+    const { cars: fleetCarsFromContext, settings, addCustomer, addReservation } = useData();
+    const [darkMode, setDarkMode] = useState(false);
+    const [currentCarIndex, setCurrentCarIndex] = useState(0);
+    const [autoScroll, setAutoScroll] = useState(true);
+    const [selectedCategory, setSelectedCategory] = useState('Tous');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [clickCount, setClickCount] = useState(0);
+const navigate = useNavigate();
+
+const handleLogoClick = () => {
+  setClickCount(prev => {
+    if (prev + 1 >= 5) { // Après 5 clics
+      navigate('/admin');
+      return 0;
+    }
+    return prev + 1;
+  });
+};
+
+
+
 const handleWhatsAppReservation = async (carName, carId, addCustomer, addReservation) => {
     // Obtenir la date d'aujourd'hui au format YYYY-MM-DD
     const today = new Date().toISOString().split('T')[0];
@@ -144,7 +167,7 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
             `🗓️ Période: du ${startDate} au ${endDate}\n` +
             `⏱️ Durée: ${durationDays} jour${durationDays > 1 ? 's' : ''}`
         );
-        window.open(`https://wa.me/212771764448?text=${message}`, '_blank');
+        window.open(`https://wa.me/${settings.phone}?text=${message}`, '_blank');
         
         Swal.fire({
             icon: 'success',
@@ -163,25 +186,6 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
     }
 };
 
-const Main = () => {
-    const { cars: fleetCarsFromContext, settings, addCustomer, addReservation } = useData();
-    const [darkMode, setDarkMode] = useState(false);
-    const [currentCarIndex, setCurrentCarIndex] = useState(0);
-    const [autoScroll, setAutoScroll] = useState(true);
-    const [selectedCategory, setSelectedCategory] = useState('Tous');
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [clickCount, setClickCount] = useState(0);
-const navigate = useNavigate();
-
-const handleLogoClick = () => {
-  setClickCount(prev => {
-    if (prev + 1 >= 5) { // Après 5 clics
-      navigate('/admin');
-      return 0;
-    }
-    return prev + 1;
-  });
-};
     
 
     // Updated cars array with Renault, Tesla, Volkswagen, and Dacia
@@ -278,7 +282,7 @@ const handleLogoClick = () => {
 
     
     const [searchTerm, setSearchTerm] = useState('');
-    const phoneNumber = '212771764448';
+    
 
     useEffect(() => {
         console.log('Fleet Cars from Context:', fleetCarsFromContext);
@@ -440,7 +444,7 @@ const handleLogoClick = () => {
     
         const getCarLogo = (carBrand) => {
             if (!carBrand) return DaciaLogo;
-        
+    
             const brand = carBrand.toLowerCase();
             const logoMap = {
                 'dacia': DaciaLogo,
@@ -466,15 +470,15 @@ const handleLogoClick = () => {
                 'chevrolet': ChevroletLogo,
                 'dfsk': DfskLogo,
             };
-            
+    
             return logoMap[brand] || DaciaLogo;
         };
     
         const getCarImage = (car) => {
             if (car.image_url) {
-                return car.image_url; // Use the full Cloudinary URL directly
+                return car.image_url;
             }
-        
+    
             const brand = car.brand?.toLowerCase();
             const imageMap = {
                 'dacia': Dacia,
@@ -482,70 +486,139 @@ const handleLogoClick = () => {
                 'tesla': Tesla,
                 'volkswagen': Touarg
             };
-        
-            return imageMap[brand] || Dacia; // Fallback for default images
+    
+            return imageMap[brand] || Dacia;
         };
     
         return (
-            <section id="hero" className="pt-28 pb-36 md:pt-32 md:pb-40 overflow-hidden">
+            <section id="hero" className="pt-20 pb-28 sm:pt-28 sm:pb-36 md:pt-32 md:pb-40 overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={currentCarIndex}
-                            className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center"
+                            className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 md:gap-16 items-center"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.5 }}
                         >
-                            <div className="space-y-6 md:space-y-10 order-2 lg:order-1">
+                            {/* Car Image and Availability Badge Container */}
+                            <div className="order-1 sm:order-2 flex flex-col items-center space-y-4 sm:space-y-0">
+                                {/* Availability Badge - Above Image on Small Screens */}
                                 <motion.div 
-                                    className="inline-flex items-center space-x-3 bg-gradient-to-r from-[#d4af37]/20 to-red-600/20 px-5 py-3 rounded-full backdrop-blur-sm"
+                                    className="inline-flex items-center space-x-2 sm:space-x-3 bg-gradient-to-r from-[#d4af37]/20 to-red-600/20 px-3 py-2 sm:px-5 sm:py-3 rounded-full backdrop-blur-sm text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 flex-shrink-0 sm:hidden"
                                     {...fadeInUp}
                                 >
-                                    <CheckCircle className="w-6 h-6 text-green-500" />
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                                    <CheckCircle className="w-4 h-4 sm:w-6 sm:h-6 text-green-500 flex-shrink-0" />
+                                    <span className="truncate">
                                         {heroDisplayCars[currentCarIndex]?.available ? 'Disponible maintenant' : 'Réservation possible'}
                                     </span>
                                 </motion.div>
+    
+                                {/* Car Image */}
+                                <motion.div
+                                    className="relative rounded-2xl sm:rounded-3xl overflow-hidden w-full"
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    style={{ perspective: '1000px', transformStyle: 'preserve-3d' }}
+                                >
+                                    <div className="relative w-full h-56 sm:h-64 md:h-80 lg:h-96">
+                                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-100 dark:to-gray-900 opacity-50 rounded-2xl" />
+                                        <img
+                                            src={heroDisplayCars[currentCarIndex] ? getCarImage(heroDisplayCars[currentCarIndex]) : Dacia}
+                                            alt={heroDisplayCars[currentCarIndex]?.name || 'Véhicule'}
+                                            className="w-full h-full object-contain rounded-2xl transform transition-transform duration-300"
+                                        />
+                                        <motion.div
+                                            className="absolute top-2 sm:top-3 md:top-4 right-2 sm:right-3 md:right-4 bg-white dark:bg-gray-900 p-1 sm:p-1.5 md:p-2 rounded-full shadow-lg"
+                                            initial={{ opacity: 0, scale: 0 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ delay: 0.6 }}
+                                        >
+                                            <img
+                                                src={heroDisplayCars[currentCarIndex] ? getCarLogo(heroDisplayCars[currentCarIndex].brand) : DaciaLogo}
+                                                alt="Logo"
+                                                className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 object-contain"
+                                            />
+                                        </motion.div>
+                                    </div>
+                                </motion.div>
+    
+                                {/* Logo Buttons */}
+                                <div className="w-full flex justify-center mt-4 sm:mt-0 sm:absolute sm:-bottom-24 md:-bottom-28 lg:-bottom-32 sm:left-1/2 sm:transform sm:-translate-x-1/2">
+                                    <div className="flex space-x-2 sm:space-x-3 md:space-x-4 py-4 px-2 overflow-x-auto overflow-y-visible">
+                                        {heroDisplayCars.map((car, index) => (
+                                            <motion.button
+                                                key={car.id || index}
+                                                onClick={() => {
+                                                    setAutoScroll(false);
+                                                    setCurrentCarIndex(index);
+                                                }}
+                                                whileHover={{ scale: 1.1 }}
+                                                className={`min-w-[60px] sm:min-w-[70px] md:min-w-[90px] h-[60px] sm:h-[70px] md:h-[90px] rounded-xl flex items-center justify-center shadow-lg transition-all ${currentCarIndex === index ? 'ring-2 sm:ring-2 md:ring-4 ring-yellow-500 scale-110' : 'opacity-70 hover:opacity-100'} ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
+                                            >
+                                                <img
+                                                    src={getCarLogo(car.brand)}
+                                                    alt="Logo"
+                                                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 object-contain p-1 sm:p-1.5"
+                                                />
+                                            </motion.button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+    
+                            {/* Text Content */}
+                            <div className="space-y-4 sm:space-y-6 md:space-y-10 order-2 sm:order-1">
+                                {/* Availability Badge - Hidden on Small Screens, Shown on Larger Screens */}
+                                <motion.div 
+                                    className="hidden sm:inline-flex items-center space-x-2 sm:space-x-3 bg-gradient-to-r from-[#d4af37]/20 to-red-600/20 px-3 py-2 sm:px-5 sm:py-3 rounded-full backdrop-blur-sm text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 flex-shrink-0"
+                                    {...fadeInUp}
+                                >
+                                    <CheckCircle className="w-4 h-4 sm:w-6 sm:h-6 text-green-500 flex-shrink-0" />
+                                    <span className="truncate">
+                                        {heroDisplayCars[currentCarIndex]?.available ? 'Disponible maintenant' : 'Réservation possible'}
+                                    </span>
+                                </motion.div>
+    
                                 <motion.h1 
-                                    className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight bg-gradient-to-r from-gray-800 dark:from-gray-100 to-[#d4af37] bg-clip-text text-transparent"
+                                    className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight bg-gradient-to-r from-gray-800 dark:from-gray-100 to-[#d4af37] bg-clip-text text-transparent"
                                     {...fadeInUp}
                                     transition={{ delay: 0.1 }}
                                 >
                                     {heroDisplayCars[currentCarIndex]?.name || 'Véhicule de luxe'}
-                                    <span className="block mt-2 md:mt-4 text-lg md:text-xl lg:text-2xl font-medium text-gray-600 dark:text-gray-300">
+                                    <span className="block mt-1 sm:mt-2 md:mt-4 text-base sm:text-lg md:text-xl lg:text-2xl font-medium text-gray-600 dark:text-gray-300">
                                         {heroDisplayCars[currentCarIndex]?.description || 'Une expérience de conduite exceptionnelle'}
                                     </span>
                                 </motion.h1>
                                 <motion.div 
-                                    className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4"
+                                    className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4"
                                     {...fadeInUp}
                                     transition={{ delay: 0.2 }}
                                 >
                                     {[
-                                        { icon: <Car />, label: 'Puissance', value: heroDisplayCars[currentCarIndex]?.puissance || 'N/A' },  // Correct spelling
+                                        { icon: <Car />, label: 'Puissance', value: heroDisplayCars[currentCarIndex]?.puissance || 'N/A' },
                                         { icon: <Clock />, label: '0-100 km/h', value: heroDisplayCars[currentCarIndex]?.acceleration || 'N/A' },
                                         { icon: <Settings />, label: 'Consommation', value: heroDisplayCars[currentCarIndex]?.consumption || 'N/A' }
                                     ].map((spec, i) => (
                                         <div 
                                             key={i}
-                                            className={`p-3 md:p-4 rounded-xl ${darkMode ? 'bg-gray-850' : 'bg-white'} shadow-md border border-gray-100 dark:border-gray-700`}
+                                            className={`p-2 sm:p-3 md:p-4 rounded-xl ${darkMode ? 'bg-gray-850' : 'bg-white'} shadow-md border border-gray-100 dark:border-gray-700`}
                                         >
-                                            <div className="flex items-center space-x-2 text-red-500 mb-2">
+                                            <div className="flex items-center space-x-1 sm:space-x-2 text-red-500 mb-1 sm:mb-2">
                                                 {spec.icon}
-                                                <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                                                <span className="text-[10px] sm:text-xs md:text-sm text-gray-500 dark:text-gray-400">
                                                     {spec.label}
                                                 </span>
                                             </div>
-                                            <div className="text-base md:text-lg font-bold">
+                                            <div className="text-sm sm:text-base md:text-lg font-bold truncate">
                                                 {spec.value}
                                             </div>
                                         </div>
                                     ))}
                                 </motion.div>
                                 <motion.div 
-                                    className="flex flex-col sm:flex-row gap-3 md:gap-4"
+                                    className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4"
                                     {...fadeInUp}
                                     transition={{ delay: 0.3 }}
                                 >
@@ -556,69 +629,18 @@ const handleLogoClick = () => {
                                             addCustomer,
                                             addReservation
                                         )}
-                                        className="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg text-sm md:text-base font-medium hover:shadow-lg transition-all"
+                                        className="px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg text-xs sm:text-sm md:text-base font-medium hover:shadow-lg transition-all whitespace-nowrap"
                                     >
                                         Réserver maintenant →
                                     </button>
-                                    <div className="flex items-center justify-center space-x-2 px-4 py-3 md:px-6 md:py-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-850 border-gray-200 dark:border-gray-700">
-                                        <span className="text-xs md:text-sm dark:text-gray-400">À partir de</span>
-                                        <span className="text-xl md:text-2xl font-bold text-red-400">
+                                    <div className="flex items-center justify-center space-x-1 sm:space-x-2 px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-850 border-gray-200 dark:border-gray-700">
+                                        <span className="text-[10px] sm:text-xs md:text-sm dark:text-gray-400">À partir de</span>
+                                        <span className="text-lg sm:text-xl md:text-2xl font-bold text-red-400">
                                             {heroDisplayCars[currentCarIndex]?.price || '---'}DH
                                         </span>
-                                        <span className="text-xs md:text-sm dark:text-gray-400">/jour</span>
+                                        <span className="text-[10px] sm:text-xs md:text-sm dark:text-gray-400">/jour</span>
                                     </div>
                                 </motion.div>
-                            </div>
-                            <div className="relative group order-1 lg:order-2">
-                                <motion.div
-                                    className="relative rounded-2xl lg:rounded-3xl overflow-hidden"
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    style={{ perspective: '1000px', transformStyle: 'preserve-3d' }}
-                                >
-                                    <div className="relative w-full h-64 sm:h-80 md:h-96">
-                                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-100 dark:to-gray-900 opacity-50 rounded-2xl" />
-                                        <img
-                                            src={heroDisplayCars[currentCarIndex] ? getCarImage(heroDisplayCars[currentCarIndex]) : Dacia}
-                                            alt={heroDisplayCars[currentCarIndex]?.name || 'Véhicule'}
-                                            className="w-full h-full object-contain rounded-2xl transform transition-transform duration-300"
-                                        />
-                                        <motion.div
-                                            className="absolute top-3 right-3 md:top-4 md:right-4 bg-white dark:bg-gray-900 p-1.5 md:p-2 rounded-full shadow-lg"
-                                            initial={{ opacity: 0, scale: 0 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            transition={{ delay: 0.6 }}
-                                        >
-                                            <img
-                                                src={heroDisplayCars[currentCarIndex] ? getCarLogo(heroDisplayCars[currentCarIndex].brand) : DaciaLogo}
-                                                alt="Logo"
-                                                className="w-8 h-8 md:w-10 md:h-10 object-contain"
-                                            />
-                                        </motion.div>
-                                    </div>
-                                </motion.div>
-                                {/* Modified this div to fix logo buttons display */}
-                                <div className="absolute -bottom-28 md:-bottom-32 left-1/2 transform -translate-x-1/2 w-full flex justify-center">
-                                    <div className="flex space-x-3 md:space-x-4 py-4 px-2 overflow-x-auto overflow-y-visible">
-                                        {heroDisplayCars.map((car, index) => (
-                                            <motion.button
-                                                key={car.id || index}
-                                                onClick={() => {
-                                                    setAutoScroll(false);
-                                                    setCurrentCarIndex(index);
-                                                }}
-                                                whileHover={{ scale: 1.1 }}
-                                                className={`min-w-[70px] md:min-w-[90px] h-[70px] md:h-[90px] rounded-xl flex items-center justify-center shadow-lg transition-all ${currentCarIndex === index ? 'ring-2 md:ring-4 ring-yellow-500 scale-110' : 'opacity-70 hover:opacity-100'} ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
-                                            >
-                                                <img
-                                                    src={getCarLogo(car.brand)}
-                                                    alt="Logo"
-                                                    className="w-12 h-12 md:w-16 md:h-16 object-contain p-1.5"
-                                                />
-                                            </motion.button>
-                                        ))}
-                                    </div>
-                                </div>
                             </div>
                         </motion.div>
                     </AnimatePresence>
@@ -1161,7 +1183,7 @@ const handleLogoClick = () => {
                     <div>
                         <h4 className="font-bold mb-4">Réseaux sociaux</h4>
                         <div className="flex space-x-4">
-                            <a href={`https://wa.me/${phoneNumber}`} className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center hover:bg-green-500/30 transition-colors">
+                            <a href={`https://wa.me/${settings.phone}`} className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center hover:bg-green-500/30 transition-colors">
                                 <FaWhatsapp className="w-5 h-5 text-green-400" />
                             </a>
                             <a href={`mailto:${settings.contactEmail}`} className="w-10 h-10 bg-gray-500/20 rounded-full flex items-center justify-center hover:bg-gray-500/30 transition-colors">
@@ -1185,12 +1207,8 @@ const handleLogoClick = () => {
 
     const FloatingWhatsAppButton = () => (
         <motion.a
-            onClick={() => handleWhatsAppReservation(
-                heroDisplayCars[currentCarIndex]?.name || 'Véhicule',
-                heroDisplayCars[currentCarIndex]?.id,
-                addCustomer,
-                addReservation
-            )}
+            href={`https://wa.me/${settings.phone}`}
+            target="_blank"
             className="fixed bottom-8 right-8 p-4 bg-green-500 text-white rounded-full shadow-xl hover:bg-green-600 transition-colors z-40"
             whileHover={{ scale: 1.1 }}
         >
