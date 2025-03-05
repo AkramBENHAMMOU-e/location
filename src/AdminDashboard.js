@@ -780,7 +780,7 @@ const AdminDashboard = () => {
                 </div>
             )}
 
-{showAddModal === 'reservation' && (
+          {showAddModal === 'reservation' && (
     <div className="fixed inset-0 z-50 overflow-y-auto">
         <div className="flex items-center justify-center min-h-screen p-4 text-center sm:block">
             <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 opacity-75" onClick={() => setShowAddModal(null)}></div>
