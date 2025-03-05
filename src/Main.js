@@ -220,20 +220,6 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
         },
         {
             id: 3,
-            name: "Tesla Model 3",
-            brand: "tesla",
-            price: 1200,
-            type: "Berline",
-            fuel: "Électrique",
-            power: "225 ch",
-            acceleration: "5.6s",
-            consumption: "14.9 kWh/100km",
-            category: "Électrique",
-            description: "Une berline électrique performante",
-            images: [TeslaLogo, TeslaLogo, TeslaLogo]
-        },
-        {
-            id: 4,
             name: "Volkswagen Touareg R Full Option",
             brand: "volkswagen",
             price: 950,
@@ -483,7 +469,6 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
             const imageMap = {
                 'dacia': Dacia,
                 'renault': Clio,
-                'tesla': Tesla,
                 'volkswagen': Touarg
             };
         
@@ -818,7 +803,6 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
             src={
                 car.brand === "dacia" ? Dacia :
                 car.brand === "renault" ? Clio :
-                car.brand === "tesla" ? Tesla :
                 car.brand === "volkswagen" ? Touarg :
                 Dacia // Default fallback
             }
