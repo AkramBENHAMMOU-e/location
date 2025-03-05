@@ -16,6 +16,9 @@ import {
   CheckCircle,
   ChevronLeft,
   ChevronRight,
+  CreditCard,
+  PhoneCall,
+  Shield,
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import Logo from './assets/logo11-removebg-preview.png';
@@ -898,55 +901,154 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
     );
 };
 
-    const Features = () => (
-        <section id="features" className="py-16 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-gray-900 dark:to-gray-950">
-            <div className="max-w-7xl mx-auto px-6">
-                <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-gray-100">
-                    Nos Avantages Exclusifs
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {[
-                        {
-                            icon: <Car className="w-8 h-8" />,
-                            title: "Livraison Gratuite",
-                            content: "Livraison et récupération à l'adresse de votre choix",
-                            color: "from-red-500 to-orange-500"
-                        },
-                        {
-                            icon: <Settings className="w-8 h-8" />,
-                            title: "Assurance Premium",
-                            content: "Couverture tous risques incluse dans chaque location",
-                            color: "from-blue-400 to-cyan-500"
-                        },
-                        {
-                            icon: <Clock className="w-8 h-8" />,
-                            title: "Service 24/7",
-                            content: "Une équipe à votre disposition à tout moment",
-                            color: "from-yellow-400 to-amber-500"
-                        }
-                    ].map((feature, index) => (
-                        <motion.div
-                            key={index}
-                            whileHover={{ y: -5 }}
-                            className="group p-8 rounded-3xl bg-white dark:bg-gray-900 shadow-xl dark:shadow-2xl border border-gray-100 dark:border-gray-800 hover:dark:shadow-gray-800/50 transition-all"
-                        >
-                            <div className={`mb-6 inline-flex bg-gradient-to-r ${feature.color} p-4 rounded-2xl`}>
-                                <div className="text-white">
-                                    {feature.icon}
-                                </div>
-                            </div>
-                            <h3 className="text-xl font-bold mb-3 text-gray-800 dark:text-gray-200">
-                                {feature.title}
-                            </h3>
-                            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                                {feature.content}
-                            </p>
-                        </motion.div>
-                    ))}
+const Features = () => {
+    // Feature data with added emoji alternatives for better visual appeal
+    const featureData = [
+      {
+        icon: <Car className="w-6 h-6 sm:w-8 sm:h-8" />,
+        emoji: "🚗",
+        title: "Livraison Gratuite",
+        content: "Livraison et récupération à l'adresse de votre choix",
+        color: "from-red-500 to-orange-500"
+      },
+      {
+        icon: <Shield className="w-6 h-6 sm:w-8 sm:h-8" />,
+        emoji: "🛡️",
+        title: "Assurance Premium",
+        content: "Couverture tous risques incluse dans chaque location",
+        color: "from-blue-400 to-cyan-500"
+      },
+      {
+        icon: <PhoneCall className="w-6 h-6 sm:w-8 sm:h-8" />,
+        emoji: "📱",
+        title: "Service 24/7",
+        content: "Une équipe à votre disposition à tout moment",
+        color: "from-yellow-400 to-amber-500"
+      },
+      {
+        icon: <Settings className="w-6 h-6 sm:w-8 sm:h-8" />,
+        emoji: "⚙️",
+        title: "Entretien Inclus",
+        content: "Tous nos véhicules sont parfaitement entretenus",
+        color: "from-green-400 to-emerald-500"
+      },
+      {
+        icon: <CreditCard className="w-6 h-6 sm:w-8 sm:h-8" />,
+        emoji: "💳",
+        title: "Paiement Flexible",
+        content: "Options de paiement adaptées à vos besoins",
+        color: "from-purple-400 to-indigo-500"
+      },
+      {
+        icon: <Clock className="w-6 h-6 sm:w-8 sm:h-8" />,
+        emoji: "⏱️",
+        title: "Réservation Rapide",
+        content: "Processus de réservation simplifié et rapide",
+        color: "from-pink-400 to-rose-500"
+      }
+    ];
+  
+    // Animation variants for staggered appearance
+    const containerVariants = {
+      hidden: { opacity: 0 },
+      visible: {
+        opacity: 1,
+        transition: {
+          staggerChildren: 0.1
+        }
+      }
+    };
+  
+    const itemVariants = {
+      hidden: { y: 20, opacity: 0 },
+      visible: {
+        y: 0,
+        opacity: 1,
+        transition: { duration: 0.5 }
+      }
+    };
+  
+    return (
+      <section id="features" className="py-12 sm:py-16 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-gray-900 dark:to-gray-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12 text-gray-900 dark:text-gray-100">
+            Nos Avantages Exclusifs
+          </h2>
+  
+          {/* Horizontal scrollable container for mobile */}
+          <div className="md:hidden overflow-x-auto pb-8 -mx-4 px-4 flex space-x-4 snap-x snap-mandatory scrollbar-hide">
+            {featureData.map((feature, index) => (
+              <motion.div
+                key={index}
+                whileHover={{ y: -5 }}
+                className="snap-center flex-shrink-0 w-80 p-6 rounded-3xl bg-white dark:bg-gray-900 shadow-xl dark:shadow-2xl border border-gray-100 dark:border-gray-800 hover:dark:shadow-gray-800/50 transition-all"
+              >
+                <div className={`mb-4 inline-flex bg-gradient-to-r ${feature.color} p-3 rounded-2xl`}>
+                  <div className="text-white">
+                    {feature.icon}
+                  </div>
                 </div>
-            </div>
-        </section>
+                <h3 className="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {feature.content}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+  
+          {/* Grid layout for tablets and desktop */}
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+          >
+            {featureData.map((feature, index) => (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                whileHover={{ y: -5 }}
+                className="group p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 shadow-xl dark:shadow-2xl border border-gray-100 dark:border-gray-800 hover:dark:shadow-gray-800/50 transition-all"
+              >
+                <div className={`mb-4 sm:mb-6 inline-flex bg-gradient-to-r ${feature.color} p-3 sm:p-4 rounded-2xl`}>
+                  <div className="text-white">
+                    {feature.icon}
+                  </div>
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-gray-800 dark:text-gray-200">
+                  {feature.title}
+                </h3>
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {feature.content}
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
+  
+          {/* Indicator dots for mobile scroll */}
+          <div className="flex justify-center space-x-2 mt-6 md:hidden">
+            {featureData.map((_, index) => (
+              <button
+                key={index}
+                className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-700 focus:outline-none"
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+  
+          {/* Mobile CTA */}
+          <div className="mt-8 text-center md:hidden">
+            <a href="#fleet" className="inline-block px-6 py-3 bg-gradient-to-r from-yellow-400 to-amber-500 text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all">
+              Découvrir nos véhicules
+            </a>
+          </div>
+        </div>
+      </section>
     );
+  };
 
     const Testimonials = () => {
         const { testimonials = [], addTestimonial, settings } = useData();
