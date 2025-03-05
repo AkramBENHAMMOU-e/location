@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import "./App.css";
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaFacebook, FaInstagram, FaWhatsapp, FaTimes, FaBars } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaWhatsapp, FaTimes, FaBars,FaChevronDown  } from "react-icons/fa";
 import { 
   Car, 
   Sun, 
@@ -14,6 +14,8 @@ import {
   Mail,
   MapPin,
   CheckCircle,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import Logo from './assets/logo11-removebg-preview.png';
@@ -947,131 +949,292 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
     );
 
     const Testimonials = () => {
-    const { testimonials = [], addTestimonial, settings } = useData();
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleAddTestimonial = async () => {
-        const { value: formValues } = await Swal.fire({
-            title: 'Ajouter un témoignage',
-            html:
-                '<input id="swal-name" class="swal2-input" placeholder="Votre nom" required>' +
-                '<input id="swal-role" class="swal2-input" placeholder="Votre rôle (ex: Client)" required>' +
-                '<textarea id="swal-content" class="swal2-textarea" placeholder="Votre témoignage" required></textarea>' +
-                '<input id="swal-rating" type="number" min="1" max="5" class="swal2-input" placeholder="Note (1-5)" required>',
-            focusConfirm: false,
-            preConfirm: () => {
-                const name = document.getElementById('swal-name').value;
-                const role = document.getElementById('swal-role').value;
-                const content = document.getElementById('swal-content').value;
-                const rating = parseInt(document.getElementById('swal-rating').value);
-                if (!name || !role || !content || !rating || rating < 1 || rating > 5) {
-                    Swal.showValidationMessage('Tous les champs sont requis et la note doit être entre 1 et 5');
-                    return false;
+        const { testimonials = [], addTestimonial, settings } = useData();
+        const [isSubmitting, setIsSubmitting] = useState(false);
+        const [currentPage, setCurrentPage] = useState(1);
+        const [itemsPerPage, setItemsPerPage] = useState(3);
+        const [filteredRating, setFilteredRating] = useState(0);
+    
+        // Adjust items per page based on screen size
+        useEffect(() => {
+            const handleResize = () => {
+                if (window.innerWidth < 640) {
+                    setItemsPerPage(1);
+                } else if (window.innerWidth < 1024) {
+                    setItemsPerPage(2);
+                } else {
+                    setItemsPerPage(3);
                 }
-                return { name, role, content, rating };
-            },
-            showCancelButton: true,
-            confirmButtonText: 'Soumettre',
-            cancelButtonText: 'Annuler',
-            confirmButtonColor: '#10B981',
-            cancelButtonColor: '#EF4444',
-        });
-
-        if (!formValues) return;
-
-        setIsSubmitting(true);
-        try {
-            await addTestimonial(formValues);
-            Swal.fire({
-                icon: 'success',
-                title: 'Témoignage ajouté !',
-                text: 'Merci pour votre contribution.',
+            };
+    
+            handleResize(); // Set initial value
+            window.addEventListener('resize', handleResize);
+            return () => window.removeEventListener('resize', handleResize);
+        }, []);
+    
+        // Filter testimonials by rating if filter is active
+        const filteredTestimonials = testimonials.filter(
+            testimonial => filteredRating === 0 || testimonial.rating === filteredRating
+        );
+    
+        // Calculate pagination
+        const totalPages = Math.ceil(filteredTestimonials.length / itemsPerPage);
+        const indexOfLastItem = currentPage * itemsPerPage;
+        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+        const currentTestimonials = filteredTestimonials.slice(indexOfFirstItem, indexOfLastItem);
+    
+        const handlePageChange = (newPage) => {
+            setCurrentPage(newPage);
+            // Scroll to top of testimonials section
+            document.getElementById('testimonials').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+    
+        const handleAddTestimonial = async () => {
+            const { value: formValues } = await Swal.fire({
+                title: 'Ajouter un témoignage',
+                html:
+                    '<input id="swal-name" class="swal2-input" placeholder="Votre nom" required>' +
+                    '<input id="swal-role" class="swal2-input" placeholder="Votre rôle (ex: Client)" required>' +
+                    '<textarea id="swal-content" class="swal2-textarea" placeholder="Votre témoignage" required></textarea>' +
+                    '<input id="swal-rating" type="number" min="1" max="5" class="swal2-input" placeholder="Note (1-5)" required>',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const name = document.getElementById('swal-name').value;
+                    const role = document.getElementById('swal-role').value;
+                    const content = document.getElementById('swal-content').value;
+                    const rating = parseInt(document.getElementById('swal-rating').value);
+                    if (!name || !role || !content || !rating || rating < 1 || rating > 5) {
+                        Swal.showValidationMessage('Tous les champs sont requis et la note doit être entre 1 et 5');
+                        return false;
+                    }
+                    return { name, role, content, rating };
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Soumettre',
+                cancelButtonText: 'Annuler',
                 confirmButtonColor: '#10B981',
+                cancelButtonColor: '#EF4444',
             });
-        } catch (error) {
-            console.error('Error adding testimonial:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Erreur',
-                text: 'Une erreur est survenue lors de l’ajout du témoignage.',
-                confirmButtonColor: '#EF4444',
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    console.log('Testimonials in Main:', testimonials); // Debug log
-
-    return (
-        <section id="testimonials" className="py-16 bg-gradient-to-br from-green-50 to-green-100 dark:from-gray-800 dark:to-gray-950">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="flex justify-between items-center mb-12">
-                    <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100">
-                        Ce que disent nos clients
-                    </h2>
-                    <motion.button
-                        onClick={handleAddTestimonial}
-                        disabled={isSubmitting}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`px-4 py-2 rounded-lg text-white font-medium ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
-                    >
-                        {isSubmitting ? 'Envoi...' : 'Ajouter un témoignage'}
-                    </motion.button>
-                </div>
-                {testimonials.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {testimonials.map((testimonial) => (
-                            <motion.div
-                                key={testimonial.id}
-                                whileHover={{ y: -5 }}
-                                className="bg-white dark:bg-gray-900 p-8 rounded-3xl shadow-lg dark:shadow-2xl border border-gray-100 dark:border-gray-800 hover:dark:shadow-gray-800/50 transition-all"
-                            >
-                                <div className="flex items-center space-x-4 mb-4">
-                                <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                                <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                    {testimonial.name[0]}
-                                </span>
-                                </div>
-                                    <div>
-                                        <h4 className="font-bold text-gray-800 dark:text-gray-200">
-                                            {testimonial.name}
-                                        </h4>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                                            {testimonial.role}
-                                        </p>
-                                    </div>
-                                </div>
-                                <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
-                                    {testimonial.content.replace('Test Drive', settings.siteName || 'Test Drive')}
-                                </p>
+    
+            if (!formValues) return;
+    
+            setIsSubmitting(true);
+            try {
+                await addTestimonial(formValues);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Témoignage ajouté !',
+                    text: 'Merci pour votre contribution.',
+                    confirmButtonColor: '#10B981',
+                });
+            } catch (error) {
+                console.error('Error adding testimonial:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: 'Une erreur est survenue lors de l ajout du témoignage.',
+                    confirmButtonColor : '#EF4444',
+                });
+            } finally {
+                setIsSubmitting(false);
+            }
+        };
+    
+        return (
+            <section id="testimonials" className="py-16 bg-gradient-to-br from-green-50 to-green-100 dark:from-gray-800 dark:to-gray-950">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 sm:mb-12">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-center sm:text-left text-gray-900 dark:text-gray-100">
+                            Ce que disent nos clients
+                        </h2>
+                        <div className="flex flex-col sm:flex-row gap-4 items-center">
+                            {/* Rating filter */}
+                            <div className="flex items-center space-x-2">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">Filtrer:</span>
                                 <div className="flex space-x-1">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star
-                                            key={i}
-                                            className={`w-5 h-5 ${
-                                                i < testimonial.rating
-                                                    ? 'text-yellow-400 dark:text-yellow-300 fill-current'
-                                                    : 'text-gray-300 dark:text-gray-600'
+                                    {[0, ...Array(5).keys().map(i => i+1)].map((rating) => (
+                                        <button
+                                            key={rating}
+                                            onClick={() => {
+                                                setFilteredRating(rating);
+                                                setCurrentPage(1);
+                                            }}
+                                            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                                                filteredRating === rating
+                                                    ? 'bg-green-500 text-white'
+                                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600'
                                             }`}
-                                        />
+                                        >
+                                            {rating === 0 ? 'Tous' : rating}
+                                        </button>
                                     ))}
                                 </div>
-                            </motion.div>
-                        ))}
+                            </div>
+                            <motion.button
+                                onClick={handleAddTestimonial}
+                                disabled={isSubmitting}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className={`px-4 py-2 rounded-lg text-white font-medium ${
+                                    isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
+                                }`}
+                            >
+                                {isSubmitting ? 'Envoi...' : 'Ajouter un témoignage'}
+                            </motion.button>
+                        </div>
                     </div>
-                ) : (
-                    <div className="text-center py-12">
-                        <p className="text-lg text-gray-600 dark:text-gray-400">
-                            Aucun témoignage disponible pour le moment. Soyez le premier à partager votre expérience !
-                        </p>
-                    </div>
-                )}
-            </div>
-        </section>
-    );
-};
+    
+                    {filteredTestimonials.length > 0 ? (
+                        <>
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentPage}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+                                >
+                                    {currentTestimonials.map((testimonial) => (
+                                        <motion.div
+                                            key={testimonial.id}
+                                            whileHover={{ y: -5 }}
+                                            className="bg-white dark:bg-gray-900 p-6 sm:p-8 rounded-3xl shadow-lg dark:shadow-2xl border border-gray-100 dark:border-gray-800 hover:dark:shadow-gray-800/50 transition-all h-full flex flex-col"
+                                        >
+                                            <div className="flex items-center space-x-4 mb-4">
+                                                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                                                    <span className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
+                                                        {testimonial.name[0]}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-gray-800 dark:text-gray-200">
+                                                        {testimonial.name}
+                                                    </h4>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                        {testimonial.role}
+                                                    </p>
+                                                    <div className="flex space-x-1 mt-1">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <Star
+                                                                key={i}
+                                                                className={`w-4 h-4 ${
+                                                                    i < testimonial.rating
+                                                                        ? 'text-yellow-400 dark:text-yellow-300 fill-current'
+                                                                        : 'text-gray-300 dark:text-gray-600'
+                                                                }`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="relative flex-grow">
+                                                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                    {testimonial.content.length > 150 
+                                                        ? `${testimonial.content.substring(0, 150).replace('Test Drive', settings.siteName || 'Test Drive')}...`
+                                                        : testimonial.content.replace('Test Drive', settings.siteName || 'Test Drive')
+                                                    }
+                                                </p>
+                                                {testimonial.content.length > 150 && (
+                                                    <button 
+                                                        className="mt-2 text-green-500 hover:text-green-600 dark:hover:text-green-400 font-medium"
+                                                        onClick={() => {
+                                                            Swal.fire({
+                                                                title: `${testimonial.name}, ${testimonial.role}`,
+                                                                html: `<p class="text-left">${testimonial.content.replace('Test Drive', settings.siteName || 'Test Drive')}</p>`,
+                                                                confirmButtonColor: '#10B981',
+                                                            });
+                                                        }}
+                                                    >
+                                                        Lire plus
+                                                    </button>
+                                                )}
+                                                <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-gray-900 to-transparent pointer-events-none"></div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </motion.div>
+                            </AnimatePresence>
+    
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="flex justify-center mt-12 space-x-2">
+                                    <button
+                                        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                                        disabled={currentPage === 1}
+                                        className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                                            currentPage === 1
+                                                ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-green-100 dark:hover:bg-green-900/30 border border-gray-200 dark:border-gray-700'
+                                        }`}
+                                    >
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </button>
+                                    
+                                    {[...Array(totalPages)].map((_, index) => {
+                                        const pageNum = index + 1;
+                                        // Show limited page numbers with ellipsis for better UX
+                                        if (
+                                            pageNum === 1 ||
+                                            pageNum === totalPages ||
+                                            (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                                        ) {
+                                            return (
+                                                <button
+                                                    key={pageNum}
+                                                    onClick={() => handlePageChange(pageNum)}
+                                                    className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${
+                                                        currentPage === pageNum
+                                                            ? 'bg-green-500 text-white'
+                                                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-green-100 dark:hover:bg-green-900/30 border border-gray-200 dark:border-gray-700'
+                                                    }`}
+                                                >
+                                                    {pageNum}
+                                                </button>
+                                            );
+                                        } else if (
+                                            (pageNum === currentPage - 2 && currentPage > 3) ||
+                                            (pageNum === currentPage + 2 && currentPage < totalPages - 2)
+                                        ) {
+                                            return (
+                                                <span
+                                                    key={pageNum}
+                                                    className="flex items-center justify-center w-10 h-10"
+                                                >
+                                                    ...
+                                                </span>
+                                            );
+                                        }
+                                        return null;
+                                    })}
+                                    
+                                    <button
+                                        onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                                            currentPage === totalPages
+                                                ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-green-100 dark:hover:bg-green-900/30 border border-gray-200 dark:border-gray-700'
+                                        }`}
+                                    >
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="text-center py-12 bg-white dark:bg-gray-900 rounded-3xl shadow-lg">
+                            <p className="text-lg text-gray-600 dark:text-gray-400">
+                                {filteredRating > 0 
+                                    ? `Aucun témoignage avec ${filteredRating} étoiles disponible.` 
+                                    : 'Aucun témoignage disponible pour le moment. Soyez le premier à partager votre expérience !'}
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </section>
+        );
+    };
 
     const Contact = () => (
         <section id="contact" className="py-16">
@@ -1120,56 +1283,129 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
         </section>
     );
 
-    const Footer = () => (
-        <footer className="bg-gradient-to-b from-gray-900 to-black text-white py-12">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <div className="space-y-4">
-                        <img src={Logo} alt={settings.siteName} className="h-12 w-auto" onClick={handleLogoClick} />
-                        <p className="text-sm text-gray-400">
-                            Location de voitures avec un service d'exception
-                        </p>
-                    </div>
-                    <div>
-                        <h4 className="font-bold mb-4">Navigation</h4>
-                        <ul className="space-y-2 text-sm text-gray-400">
-                            <li><a href="#fleet" className="hover:text-[#d4af37]">Notre Flotte</a></li>
-                            <li><a href="#features" className="hover:text-[#d4af37]">Avantages</a></li>
-                            <li><a href="#contact" className="hover:text-[#d4af37]">Contact</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="font-bold mb-4">Légal</h4>
-                        <ul className="space-y-2 text-sm text-gray-400">
-                            <li><a href="#" className="hover:text-[#d4af37]">Conditions générales</a></li>
-                            <li><a href="#" className="hover:text-[#d4af37]">Politique de confidentialité</a></li>
-                            <li><a href="#" className="hover:text-[#d4af37]">Mentions légales</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="font-bold mb-4">Réseaux sociaux</h4>
-                        <div className="flex space-x-4">
-                            <a href={`https://wa.me/${settings.phone}`} className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center hover:bg-green-500/30 transition-colors">
-                                <FaWhatsapp className="w-5 h-5 text-green-400" />
-                            </a>
-                            <a href={`mailto:${settings.contactEmail}`} className="w-10 h-10 bg-gray-500/20 rounded-full flex items-center justify-center hover:bg-gray-500/30 transition-colors">
-                                <Mail className="w-5 h-5 text-white-400" />
-                            </a>
-                            <a href={settings.facebook} className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center hover:bg-blue-500/30 transition-colors">
-                                <FaFacebook className="w-5 h-5 text-white-400" />
-                            </a>
-                            <a href={settings.instagram} className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center hover:bg-red-500/30 transition-colors">
-                                <FaInstagram className="w-5 h-5 text-red-400" />
-                            </a>
+    const Footer = () => {
+        const [openSection, setOpenSection] = useState(null);
+    
+        const toggleSection = (section) => {
+            setOpenSection(openSection === section ? null : section);
+        };
+    
+        return (
+            <footer className="bg-gradient-to-b from-gray-900 to-black text-white py-8 md:py-12">
+                <div className="max-w-7xl mx-auto px-4 md:px-6">
+                    {/* Top Section - Always Visible */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8">
+                        {/* Logo Section - Consistent across devices */}
+                        <div className="space-y-4 md:block flex flex-col items-center text-center">
+                            <img 
+                                src={Logo} 
+                                alt={settings.siteName} 
+                                className="h-12 w-auto mx-auto mb-4 cursor-pointer" 
+                                onClick={handleLogoClick} 
+                            />
+                            <p className="text-sm text-gray-400 text-center">
+                                Location de voitures avec un service d'exception
+                            </p>
+                        </div>
+    
+                        {/* Mobile Accordion Sections */}
+                        <div className="md:block">
+                            <div 
+                                className="flex justify-between items-center border-b border-gray-800 pb-2 md:border-none md:pb-0 cursor-pointer"
+                                onClick={() => toggleSection('navigation')}
+                            >
+                                <h4 className="font-bold">Navigation</h4>
+                                <FaChevronDown 
+                                    className="md:hidden transform transition-transform" 
+                                    style={{ 
+                                        transform: openSection === 'navigation' ? 'rotate(180deg)' : 'rotate(0deg)' 
+                                    }} 
+                                />
+                            </div>
+                            <ul 
+                                className={`
+                                    ${openSection === 'navigation' ? 'max-h-96' : 'max-h-0'} 
+                                    md:max-h-96 overflow-hidden transition-all duration-300 ease-in-out
+                                    space-y-2 text-sm text-gray-400 md:block
+                                `}
+                            >
+                                <li><a href="#fleet" className="hover:text-[#d4af37]">Notre Flotte</a></li>
+                                <li><a href="#features" className="hover:text-[#d4af37]">Avantages</a></li>
+                                <li><a href="#contact" className="hover:text-[#d4af37]">Contact</a></li>
+                            </ul>
+                        </div>
+    
+                        <div className="md:block">
+                            <div 
+                                className="flex justify-between items-center border-b border-gray-800 pb-2 md:border-none md:pb-0 cursor-pointer"
+                                onClick={() => toggleSection('legal')}
+                            >
+                                <h4 className="font-bold">Légal</h4>
+                                <FaChevronDown 
+                                    className="md:hidden transform transition-transform" 
+                                    style={{ 
+                                        transform: openSection === 'legal' ? 'rotate(180deg)' : 'rotate(0deg)' 
+                                    }} 
+                                />
+                            </div>
+                            <ul 
+                                className={`
+                                    ${openSection === 'legal' ? 'max-h-96' : 'max-h-0'} 
+                                    md:max-h-96 overflow-hidden transition-all duration-300 ease-in-out
+                                    space-y-2 text-sm text-gray-400 md:block
+                                `}
+                            >
+                                <li><a href="#" className="hover:text-[#d4af37]">Conditions générales</a></li>
+                                <li><a href="#" className="hover:text-[#d4af37]">Politique de confidentialité</a></li>
+                                <li><a href="#" className="hover:text-[#d4af37]">Mentions légales</a></li>
+                            </ul>
+                        </div>
+    
+                        {/* Social Media Section */}
+                        <div className="md:block">
+                            <div 
+                                className="flex justify-between items-center border-b border-gray-800 pb-2 md:border-none md:pb-0 cursor-pointer"
+                                onClick={() => toggleSection('social')}
+                            >
+                                <h4 className="font-bold">Réseaux sociaux</h4>
+                                <FaChevronDown 
+                                    className="md:hidden transform transition-transform" 
+                                    style={{ 
+                                        transform: openSection === 'social' ? 'rotate(180deg)' : 'rotate(0deg)' 
+                                    }} 
+                                />
+                            </div>
+                            <div 
+                                className={`
+                                    ${openSection === 'social' ? 'max-h-96' : 'max-h-0'} 
+                                    md:max-h-96 overflow-hidden transition-all duration-300 ease-in-out
+                                    flex justify-center md:justify-start space-x-4 mt-4
+                                `}
+                            >
+                                <a href={`https://wa.me/${settings.phone}`} className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center hover:bg-green-500/30 transition-colors">
+                                    <FaWhatsapp className="w-5 h-5 text-green-400" />
+                                </a>
+                                <a href={`mailto:${settings.contactEmail}`} className="w-10 h-10 bg-gray-500/20 rounded-full flex items-center justify-center hover:bg-gray-500/30 transition-colors">
+                                    <Mail className="w-5 h-5 text-white-400" />
+                                </a>
+                                <a href={settings.facebook} className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center hover:bg-blue-500/30 transition-colors">
+                                    <FaFacebook className="w-5 h-5 text-white-400" />
+                                </a>
+                                <a href={settings.instagram} className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center hover:bg-red-500/30 transition-colors">
+                                    <FaInstagram className="w-5 h-5 text-red-400" />
+                                </a>
+                            </div>
                         </div>
                     </div>
+    
+                    {/* Copyright Section */}
+                    <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+                        © {new Date().getFullYear()} {settings.siteName}. Tous droits réservés.
+                    </div>
                 </div>
-                <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-                    © {new Date().getFullYear()} {settings.siteName}. Tous droits réservés.
-                </div>
-            </div>
-        </footer>
-    );
+            </footer>
+        );
+    };
 
     const FloatingWhatsAppButton = () => (
         <motion.a
