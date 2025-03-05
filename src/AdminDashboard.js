@@ -1,11 +1,65 @@
-import React, { useState } from 'react';
-import { Calendar, Car, Users, Settings, PieChart, Plus, Edit, Trash, Search, MessageSquare, LogOut, Menu } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, Car, Users, Settings, PieChart, Plus, Edit, Trash, Search, MessageSquare, LogOut, Menu, Sun, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useData } from './context/DataContext';
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar state
+    const [activeTab, setActiveTab] = useState('apercu');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showAddModal, setShowAddModal] = useState(null); // 'car', 'customer', 'reservation', 'testimonial'
+    const [editingItem, setEditingItem] = useState(null);
+    const [showConfirmDelete, setShowConfirmDelete] = useState(null);
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        // Check localStorage or system preference for initial state
+        const savedMode = localStorage.getItem('darkMode');
+        return savedMode ? JSON.parse(savedMode) : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    });
+
+    // Mobile responsive breakpoint
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    const updateMedia = () => {
+        setIsMobile(window.innerWidth < 768);
+    };
+
+    useEffect(() => {
+        window.addEventListener('resize', updateMedia);
+        return () => window.removeEventListener('resize', updateMedia);
+    }, []);
+
+    // Effect to toggle dark mode class and save preference
+    useEffect(() => {
+        if (isDarkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+    }, [isDarkMode]);
+
+    const toggleDarkMode = () => {
+        setIsDarkMode(prevMode => !prevMode);
+    };
+
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        if (isMobile) setIsSidebarOpen(false); // Close sidebar on mobile after navigation
+    };
+
     const navigate = useNavigate();
+    const {
+        cars = [], reservations = [], customers = [], settings = {}, testimonials = [],
+        isLoading, addCar, updateCar, deleteCar, addCustomer, updateCustomer, deleteCustomer,
+        addReservation, updateReservation, deleteReservation, addTestimonial, updateTestimonial,
+        deleteTestimonial, updateSettings, refreshData
+    } = useData();
+
+    const formatDateForMySQL = (isoDate) => {
+        const date = new Date(isoDate);
+        return date.toISOString().slice(0, 19).replace('T', ' ');
+    };
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -14,44 +68,9 @@ const AdminDashboard = () => {
         window.location.href = "/";
     };
 
-    const [activeTab, setActiveTab] = useState('apercu');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [showAddModal, setShowAddModal] = useState(null);
-    const [editingItem, setEditingItem] = useState(null);
-    const [showConfirmDelete, setShowConfirmDelete] = useState(null);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for mobile sidebar
-
-    const formatDateForMySQL = (isoDate) => {
-        const date = new Date(isoDate);
-        return date.toISOString().slice(0, 19).replace('T', ' ');
-    };
-
-    const { cars = [], reservations = [], customers = [], settings = {}, testimonials = [],
-        isLoading, addCar, updateCar, deleteCar, addCustomer, updateCustomer, deleteCustomer,
-        addReservation, updateReservation, deleteReservation, addTestimonial, updateTestimonial,
-        deleteTestimonial, updateSettings, refreshData } = useData();
-
     const filteredTestimonials = (testimonials || []).filter(t =>
         t.name.toLowerCase().includes(searchTerm.toLowerCase()) || t.content.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    const filteredCars = (cars || []).filter(car =>
-        car.name.toLowerCase().includes(searchTerm.toLowerCase()) || car.brand.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    const filteredReservations = (reservations || []).filter(res =>
-        res.car_name?.toLowerCase().includes(searchTerm.toLowerCase()) || res.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) || res.status.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    const filteredCustomers = (customers || []).filter(customer =>
-        customer.name.toLowerCase().includes(searchTerm.toLowerCase()) || customer.phone.includes(searchTerm)
-    );
-
-    const stats = {
-        totalCars: cars.length || 0,
-        availableCars: (cars || []).filter(car => car.available).length,
-        activeReservations: (reservations || []).filter(res => res.status === 'active').length,
-        totalCustomers: customers.length || 0,
-        revenue: Math.round((reservations || []).reduce((sum, res) => sum + Number(res.total), 0)),
-    };
 
     const handleAddTestimonial = async (testimonialData) => {
         await addTestimonial(testimonialData);
@@ -91,6 +110,24 @@ const AdminDashboard = () => {
             console.error('Error submitting settings:', error);
             alert('Erreur lors de la mise à jour des paramètres.');
         }
+    };
+
+    const filteredCars = (cars || []).filter(car =>
+        car.name.toLowerCase().includes(searchTerm.toLowerCase()) || car.brand.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const filteredReservations = (reservations || []).filter(res =>
+        res.car_name?.toLowerCase().includes(searchTerm.toLowerCase()) || res.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) || res.status.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const filteredCustomers = (customers || []).filter(customer =>
+        customer.name.toLowerCase().includes(searchTerm.toLowerCase()) || customer.phone.includes(searchTerm)
+    );
+
+    const stats = {
+        totalCars: cars.length || 0,
+        availableCars: (cars || []).filter(car => car.available).length,
+        activeReservations: (reservations || []).filter(res => res.status === 'active').length,
+        totalCustomers: customers.length || 0,
+        revenue: Math.round((reservations || []).reduce((sum, res) => sum + Number(res.total), 0)),
     };
 
     const handleAddCar = async (formData) => {
@@ -169,15 +206,49 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-            {/* Sidebar */}
-            <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-md transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}>
+        <div className="flex flex-col md:flex-row min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+            {/* Mobile Header */}
+            <div className="md:hidden bg-white dark:bg-gray-800 shadow p-4 flex items-center justify-between">
+                <button
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                    className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-500"
+                >
+                    <Menu className="h-6 w-6" />
+                </button>
+                <div className="flex items-center space-x-2">
+                    <div className="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                        <span className="text-sm">AM</span>
+                    </div>
+                    <button
+                        onClick={toggleDarkMode}
+                        className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-500"
+                    >
+                        {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                    </button>
+                </div>
+            </div>
+
+            {/* Sidebar with mobile responsiveness */}
+            <div className={`fixed md:relative z-30 md:z-auto w-64 bg-white dark:bg-gray-800 shadow-md transform transition-transform duration-300 ease-in-out 
+                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700 md:hidden">
+                    <button
+                        onClick={() => setIsSidebarOpen(false)}
+                        className="text-gray-600 dark:text-gray-400 hover:text-red-500"
+                    >
+                        ✕
+                    </button>
+                </div>
                 <nav className="flex-1 mt-4">
                     {['apercu', 'voitures', 'reservations', 'clients', 'témoignages', 'parametres'].map(tab => (
                         <button
                             key={tab}
-                            onClick={() => { setActiveTab(tab); setIsSidebarOpen(false); }}
-                            className={`w-full flex items-center justify-start p-3 px-6 ${activeTab === tab ? 'bg-red-50 text-red-500 dark:bg-gray-700 dark:text-red-400 border-l-4 border-red-500' : 'text-gray-600 dark:text-gray-400'}`}
+                            onClick={() => handleTabChange(tab)}
+                            className={`w-full flex items-center justify-start p-3 md:px-6 ${
+                                activeTab === tab 
+                                ? 'bg-red-50 text-red-500 dark:bg-gray-700 dark:text-red-400 border-l-4 border-red-500' 
+                                : 'text-gray-600 dark:text-gray-400'
+                            }`}
                         >
                             {tab === 'apercu' && <PieChart className="h-5 w-5" />}
                             {tab === 'voitures' && <Car className="h-5 w-5" />}
@@ -192,7 +263,7 @@ const AdminDashboard = () => {
                 <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center justify-start p-2 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                        className="w-full flex items-center justify-start p-2 text-gray-600 dark:text-gray-400 hover:text-red-500"
                     >
                         <LogOut className="h-5 w-5" />
                         <span className="ml-3">Déconnexion</span>
@@ -200,44 +271,58 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className="flex-1 overflow-x-hidden">
-                <header className="bg-white dark:bg-gray-800 shadow p-4 flex items-center justify-between md:justify-start">
-                    <button
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="md:hidden p-2 text-gray-600 dark:text-gray-400"
-                    >
-                        <Menu className="h-6 w-6" />
-                    </button>
-                    <h1 className="text-lg md:text-xl font-bold flex-1 text-center md:text-left">
-                        {activeTab === 'apercu' && 'Tableau de bord'}
-                        {activeTab === 'voitures' && 'Gestion des véhicules'}
-                        {activeTab === 'reservations' && 'Gestion des réservations'}
-                        {activeTab === 'clients' && 'Gestion des clients'}
-                        {activeTab === 'témoignages' && 'Gestion des témoignages'}
-                        {activeTab === 'parametres' && 'Paramètres du site'}
-                    </h1>
-                    <div className="flex items-center space-x-2">
+            {/* Main Content Area */}
+            <div className="flex-1 overflow-x-hidden pt-16 md:pt-0">
+                <header className="bg-white dark:bg-gray-800 shadow p-4">
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-lg md:text-xl font-bold">
+                            {activeTab === 'apercu' && 'Tableau de bord'}
+                            {activeTab === 'voitures' && 'Véhicules'}
+                            {activeTab === 'reservations' && 'Réservations'}
+                            {activeTab === 'clients' && 'Clients'}
+                            {activeTab === 'témoignages' && 'Témoignages'}
+                            {activeTab === 'parametres' && 'Paramètres'}
+                        </h1>
+                        <div className="flex items-center space-x-4">
+                            <div className="relative hidden md:block">
+                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Rechercher..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-8 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                />
+                            </div>
+                            <div className="hidden md:flex items-center space-x-2">
+                                <button
+                                    onClick={toggleDarkMode}
+                                    className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-500"
+                                >
+                                    {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                                </button>
+                                <div className="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                                    <span className="text-sm">AM</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Mobile Search */}
+                    <div className="mt-4 md:hidden">
                         <div className="relative">
-                            <Search className="absolute left-2 top-2 h-4 w-4 text-gray-400" />
+                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
                             <input
                                 type="text"
                                 placeholder="Rechercher..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-8 pr-2 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 w-24 md:w-40"
+                                className="w-full pl-8 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                             />
-                        </div>
-                        <div className="hidden md:flex items-center">
-                            <div className="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-                                <span className="text-sm">AM</span>
-                            </div>
-                            <span className="ml-2">Admin</span>
                         </div>
                     </div>
                 </header>
 
-                <main className="p-2 md:p-6">
+                <main className="p-4 sm:p-6">
                     {isLoading ? (
                         <div className="flex items-center justify-center h-64">
                             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-500"></div>
@@ -246,7 +331,7 @@ const AdminDashboard = () => {
                         <>
                             {activeTab === 'apercu' && (
                                 <div>
-                                    <div className="grid grid-cols-2 gap-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4 mb-4 md:mb-6">
+                                    <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-4 mb-4 md:mb-6">
                                         <div className="bg-white dark:bg-gray-800 p-2 md:p-4 rounded-lg shadow-sm">
                                             <div className="flex items-center">
                                                 <div className="rounded-full p-2 bg-blue-100 dark:bg-blue-900">
@@ -297,16 +382,33 @@ const AdminDashboard = () => {
                                     <div className="grid grid-cols-1 gap-2 md:gap-4">
                                         <div className="bg-white dark:bg-gray-800 p-2 md:p-4 rounded-lg shadow-sm">
                                             <h2 className="text-base md:text-lg font-semibold mb-2 md:mb-4">Réservations récentes</h2>
-                                            <div className="space-y-2">
-                                                {reservations.slice(0, 5).map(reservation => (
-                                                    <div key={reservation.id} className="border-b dark:border-gray-700 pb-2 md:pb-3 text-xs md:text-sm">
-                                                        <p><strong>ID:</strong> {reservation.id}</p>
-                                                        <p><strong>Client:</strong> {reservation.customer_name}</p>
-                                                        <p><strong>Véhicule:</strong> {reservation.car_name}</p>
-                                                        <p><strong>Date:</strong> {new Date(reservation.start_date).toLocaleDateString()}</p>
-                                                        <p><strong>Statut:</strong> <span className={`inline-block px-2 py-1 rounded-full text-xs ${reservation.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : reservation.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}>{reservation.status}</span></p>
-                                                    </div>
-                                                ))}
+                                            <div className="overflow-x-auto">
+                                                <table className="min-w-full">
+                                                    <thead>
+                                                        <tr className="border-b dark:border-gray-700">
+                                                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">ID</th>
+                                                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Client</th>
+                                                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Véhicule</th>
+                                                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Date</th>
+                                                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Statut</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {reservations.slice(0, 5).map(reservation => (
+                                                            <tr key={reservation.id} className="border-b dark:border-gray-700">
+                                                                <td className="py-3 px-4">{reservation.id}</td>
+                                                                <td className="py-3 px-4">{reservation.customer_name}</td>
+                                                                <td className="py-3 px-4">{reservation.car_name}</td>
+                                                                <td className="py-3 px-4">{new Date(reservation.start_date).toLocaleDateString()}</td>
+                                                                <td className="py-3 px-4">
+                                                                    <span className={`inline-block px-2 py-1 rounded-full text-xs ${reservation.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : reservation.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}>
+                                                                        {reservation.status}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                         <div className="bg-white dark:bg-gray-800 p-2 md:p-4 rounded-lg shadow-sm">
@@ -335,51 +437,51 @@ const AdminDashboard = () => {
                                             <Plus className="h-4 w-4 mr-1 md:mr-2" /> Ajouter
                                         </button>
                                     </div>
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                                        <div className="space-y-2 md:space-y-0 md:table min-w-full">
-                                            <div className="hidden md:table-header-group bg-gray-50 dark:bg-gray-700">
-                                                <div className="md:table-row">
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">ID</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Véhicule</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Marque</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Prix</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Statut</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Réservations</div>
-                                                    <div className="md:table-cell text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</div>
-                                                </div>
-                                            </div>
-                                            <div className="md:table-row-group">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-x-auto">
+                                        <table className="min-w-full">
+                                            <thead>
+                                                <tr className="bg-gray-50 dark:bg-gray-700">
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">ID</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Véhicule</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Marque</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Prix</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Statut</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Réservations</th>
+                                                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
                                                 {filteredCars.map(car => (
-                                                    <div key={car.id} className="border-b dark:border-gray-700 p-2 md:p-0 md:table-row text-xs md:text-sm flex flex-col md:flex-row">
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">ID:</span> {car.id}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4 flex items-center">
-                                                            <span className="md:hidden font-bold mr-1">Véhicule:</span>
-                                                            <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-200 dark:bg-gray-700 rounded-md overflow-hidden flex-shrink-0">
-                                                                <img src={car.image_url} alt={car.name} className="w-full h-full object-cover" />
+                                                    <tr key={car.id} className="border-b dark:border-gray-700">
+                                                        <td className="py-3 px-4">{car.id}</td>
+                                                        <td className="py-3 px-4">
+                                                            <div className="flex items-center">
+                                                                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-md overflow-hidden flex-shrink-0">
+                                                                    <img src={car.image_url} alt={car.name} className="w-full h-full object-cover" />
+                                                                </div>
+                                                                <span className="ml-3">{car.name}</span>
                                                             </div>
-                                                            <span className="ml-2">{car.name}</span>
-                                                        </div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Marque:</span> {car.brand}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Prix:</span> {car.price} DH/jour</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4">
-                                                            <span className="md:hidden font-bold">Statut:</span>
+                                                        </td>
+                                                        <td className="py-3 px-4">{car.brand}</td>
+                                                        <td className="py-3 px-4">{car.price} DH/jour</td>
+                                                        <td className="py-3 px-4">
                                                             <span className={`inline-block px-2 py-1 rounded-full text-xs ${car.available ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
                                                                 {car.available ? 'Disponible' : 'Réservé'}
                                                             </span>
-                                                        </div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Réservations:</span> {car.reservations_count}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4 text-right flex md:table-cell justify-end">
-                                                            <button onClick={() => { setEditingItem(car); setShowAddModal('car'); }} className="text-blue-500 hover:text-blue-700 mr-2 md:mr-3">
+                                                        </td>
+                                                        <td className="py-3 px-4">{car.reservations_count}</td>
+                                                        <td className="py-3 px-4 text-right">
+                                                            <button onClick={() => { setEditingItem(car); setShowAddModal('car'); }} className="text-blue-500 hover:text-blue-700 mr-3">
                                                                 <Edit className="h-4 w-4" />
                                                             </button>
                                                             <button onClick={() => setShowConfirmDelete({ type: 'car', id: car.id })} className="text-red-500 hover:text-red-700">
                                                                 <Trash className="h-4 w-4" />
                                                             </button>
-                                                        </div>
-                                                    </div>
+                                                        </td>
+                                                    </tr>
                                                 ))}
-                                            </div>
-                                        </div>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             )}
@@ -391,45 +493,44 @@ const AdminDashboard = () => {
                                             <Plus className="h-4 w-4 mr-1 md:mr-2" /> Ajouter
                                         </button>
                                     </div>
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                                        <div className="space-y-2 md:space-y-0 md:table min-w-full">
-                                            <div className="hidden md:table-header-group bg-gray-50 dark:bg-gray-700">
-                                                <div className="md:table-row">
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">ID</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Client</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Véhicule</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Dates</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Total</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Statut</div>
-                                                    <div className="md:table-cell text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</div>
-                                                </div>
-                                            </div>
-                                            <div className="md:table-row-group">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-x-auto">
+                                        <table className="min-w-full">
+                                            <thead>
+                                                <tr className="bg-gray-50 dark:bg-gray-700">
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">ID</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Client</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Véhicule</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Dates</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Total</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Statut</th>
+                                                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
                                                 {filteredReservations.map(reservation => (
-                                                    <div key={reservation.id} className="border-b dark:border-gray-700 p-2 md:p-0 md:table-row text-xs md:text-sm flex flex-col md:flex-row">
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">ID:</span> {reservation.id}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Client:</span> {reservation.customer_name}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Véhicule:</span> {reservation.car_name}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Dates:</span> {new Date(reservation.start_date).toLocaleDateString()} - {new Date(reservation.end_date).toLocaleDateString()}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Total:</span> {reservation.total} DH</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4">
-                                                            <span className="md:hidden font-bold">Statut:</span>
+                                                    <tr key={reservation.id} className="border-b dark:border-gray-700">
+                                                        <td className="py-3 px-4">{reservation.id}</td>
+                                                        <td className="py-3 px-4">{reservation.customer_name}</td>
+                                                        <td className="py-3 px-4">{reservation.car_name}</td>
+                                                        <td className="py-3 px-4">{new Date(reservation.start_date).toLocaleDateString()} - {new Date(reservation.end_date).toLocaleDateString()}</td>
+                                                        <td className="py-3 px-4">{reservation.total} DH</td>
+                                                        <td className="py-3 px-4">
                                                             <span className={`inline-block px-2 py-1 rounded-full text-xs ${reservation.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : reservation.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}>
                                                                 {reservation.status}
                                                             </span>
-                                                        </div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4 text-right flex md:table-cell justify-end">
-                                                            <button onClick={() => { setEditingItem(reservation); setShowAddModal('reservation'); }} className="text-blue-500 hover:text-blue-700 mr-2 md:mr-3">
+                                                        </td>
+                                                        <td className="py-3 px-4 text-right">
+                                                            <button onClick={() => { setEditingItem(reservation); setShowAddModal('reservation'); }} className="text-blue-500 hover:text-blue-700 mr-3">
                                                                 <Edit className="h-4 w-4" />
                                                             </button>
                                                             <button onClick={() => setShowConfirmDelete({ type: 'reservation', id: reservation.id })} className="text-red-500 hover:text-red-700">
                                                                 <Trash className="h-4 w-4" />
                                                             </button>
-                                                        </div>
-                                                    </div>
+                                                        </td>
+                                                    </tr>
                                                 ))}
-                                            </div>
-                                        </div>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             )}
@@ -441,38 +542,38 @@ const AdminDashboard = () => {
                                             <Plus className="h-4 w-4 mr-1 md:mr-2" /> Ajouter
                                         </button>
                                     </div>
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                                        <div className="space-y-2 md:space-y-0 md:table min-w-full">
-                                            <div className="hidden md:table-header-group bg-gray-50 dark:bg-gray-700">
-                                                <div className="md:table-row">
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">ID</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Nom</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Téléphone</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Réservations</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Dépenses</div>
-                                                    <div className="md:table-cell text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</div>
-                                                </div>
-                                            </div>
-                                            <div className="md:table-row-group">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-x-auto">
+                                        <table className="min-w-full">
+                                            <thead>
+                                                <tr className="bg-gray-50 dark:bg-gray-700">
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">ID</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Nom</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Téléphone</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Réservations</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Dépenses</th>
+                                                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
                                                 {filteredCustomers.map(customer => (
-                                                    <div key={customer.id} className="border-b dark:border-gray-700 p-2 md:p-0 md:table-row text-xs md:text-sm flex flex-col md:flex-row">
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">ID:</span> {customer.id}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Nom:</span> {customer.name}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Téléphone:</span> {customer.phone}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Réservations:</span> {customer.reservations_count}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Dépenses:</span> {customer.total_spent} DH</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4 text-right flex md:table-cell justify-end">
-                                                            <button onClick={() => { setEditingItem(customer); setShowAddModal('customer'); }} className="text-blue-500 hover:text-blue-700 mr-2 md:mr-3">
+                                                    <tr key={customer.id} className="border-b dark:border-gray-700">
+                                                        <td className="py-3 px-4">{customer.id}</td>
+                                                        <td className="py-3 px-4">{customer.name}</td>
+                                                        <td className="py-3 px-4">{customer.phone}</td>
+                                                        <td className="py-3 px-4">{customer.reservations_count}</td>
+                                                        <td className="py-3 px-4">{customer.total_spent} DH</td>
+                                                        <td className="py-3 px-4 text-right">
+                                                            <button onClick={() => { setEditingItem(customer); setShowAddModal('customer'); }} className="text-blue-500 hover:text-blue-700 mr-3">
                                                                 <Edit className="h-4 w-4" />
                                                             </button>
                                                             <button onClick={() => setShowConfirmDelete({ type: 'customer', id: customer.id })} className="text-red-500 hover:text-red-700">
                                                                 <Trash className="h-4 w-4" />
                                                             </button>
-                                                        </div>
-                                                    </div>
+                                                        </td>
+                                                    </tr>
                                                 ))}
-                                            </div>
-                                        </div>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             )}
@@ -484,38 +585,38 @@ const AdminDashboard = () => {
                                             <Plus className="h-4 w-4 mr-1 md:mr-2" /> Ajouter
                                         </button>
                                     </div>
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                                        <div className="space-y-2 md:space-y-0 md:table min-w-full">
-                                            <div className="hidden md:table-header-group bg-gray-50 dark:bg-gray-700">
-                                                <div className="md:table-row">
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">ID</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Nom</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Rôle</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Contenu</div>
-                                                    <div className="md:table-cell text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Note</div>
-                                                    <div className="md:table-cell text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</div>
-                                                </div>
-                                            </div>
-                                            <div className="md:table-row-group">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-x-auto">
+                                        <table className="min-w-full">
+                                            <thead>
+                                                <tr className="bg-gray-50 dark:bg-gray-700">
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">ID</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Nom</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Rôle</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Contenu</th>
+                                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Note</th>
+                                                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
                                                 {filteredTestimonials.map(t => (
-                                                    <div key={t.id} className="border-b dark:border-gray-700 p-2 md:p-0 md:table-row text-xs md:text-sm flex flex-col md:flex-row">
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">ID:</span> {t.id}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Nom:</span> {t.name}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Rôle:</span> {t.role}</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Contenu:</span> {t.content.substring(0, 30)}...</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4"><span className="md:hidden font-bold">Note:</span> {t.rating}/5</div>
-                                                        <div className="md:table-cell py-1 md:py-3 px-2 md:px-4 text-right flex md:table-cell justify-end">
-                                                            <button onClick={() => { setEditingItem(t); setShowAddModal('testimonial'); }} className="text-blue-500 hover:text-blue-700 mr-2 md:mr-3">
+                                                    <tr key={t.id} className="border-b dark:border-gray-700">
+                                                        <td className="py-3 px-4">{t.id}</td>
+                                                        <td className="py-3 px-4">{t.name}</td>
+                                                        <td className="py-3 px-4">{t.role}</td>
+                                                        <td className="py-3 px-4">{t.content.substring(0, 50)}...</td>
+                                                        <td className="py-3 px-4">{t.rating}/5</td>
+                                                        <td className="py-3 px-4 text-right">
+                                                            <button onClick={() => { setEditingItem(t); setShowAddModal('testimonial'); }} className="text-blue-500 hover:text-blue-700 mr-3">
                                                                 <Edit className="h-4 w-4" />
                                                             </button>
                                                             <button onClick={() => setShowConfirmDelete({ type: 'testimonial', id: t.id })} className="text-red-500 hover:text-red-700">
                                                                 <Trash className="h-4 w-4" />
                                                             </button>
-                                                        </div>
-                                                    </div>
+                                                        </td>
+                                                    </tr>
                                                 ))}
-                                            </div>
-                                        </div>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             )}
@@ -567,65 +668,73 @@ const AdminDashboard = () => {
                 </main>
             </div>
 
+            {/* Overlay for mobile sidebar */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 z-20 bg-black opacity-50 md:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
             {/* Modals */}
             {showAddModal === 'car' && (
                 <div className="fixed inset-0 z-50 overflow-y-auto">
-                    <div className="flex items-center justify-center min-h-screen p-2 md:p-4">
-                        <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
-                        <div className="relative bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl w-full max-w-md md:max-w-lg">
+                    <div className="flex items-center justify-center min-h-screen p-4 text-center sm:block">
+                        <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 opacity-75" onClick={() => setShowAddModal(null)}></div>
+                        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full mx-2">
                             <form onSubmit={(e) => {
                                 e.preventDefault();
                                 const formData = new FormData(e.target);
                                 if (editingItem) handleUpdateCar(editingItem.id, formData);
                                 else handleAddCar(formData);
                             }}>
-                                <div className="p-3 md:p-6">
-                                    <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white mb-3 md:mb-4">{editingItem ? 'Modifier le véhicule' : 'Ajouter un véhicule'}</h3>
-                                    <div className="space-y-3 md:space-y-4">
+                                <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">{editingItem ? 'Modifier le véhicule' : 'Ajouter un véhicule'}</h3>
+                                    <div className="space-y-4">
                                         <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom du véhicule</label>
-                                            <input name="name" type="text" defaultValue={editingItem?.name || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom du véhicule</label>
+                                            <input name="name" type="text" defaultValue={editingItem?.name || ''} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
                                         </div>
                                         <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marque</label>
-                                            <input name="brand" type="text" defaultValue={editingItem?.brand || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marque</label>
+                                            <input name="brand" type="text" defaultValue={editingItem?.brand || ''} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
                                         </div>
                                         <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Prix par jour (DH)</label>
-                                            <input name="price" type="number" defaultValue={editingItem?.price || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Prix par jour (DH)</label>
+                                            <input name="price" type="number" defaultValue={editingItem?.price || ''} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
                                         </div>
                                         <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-                                            <textarea name="description" className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" defaultValue={editingItem?.description || ''} rows="2 md:rows-3" />
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                                            <textarea name="description" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" defaultValue={editingItem?.description || ''} rows="3" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Accélération (0-100 km/h)</label>
-                                            <input name="acceleration" type="text" defaultValue={editingItem?.acceleration || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" />
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Accélération (0-100 km/h en secondes)</label>
+                                            <input name="acceleration" type="text" defaultValue={editingItem?.acceleration || ''} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Consommation</label>
-                                            <input name="consumption" type="text" defaultValue={editingItem?.consumption || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" />
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Consommation (L/100km ou kWh/100km)</label>
+                                            <input name="consumption" type="text" defaultValue={editingItem?.consumption || ''} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Puissance (CV)</label>
-                                            <input name="puissance" type="text" defaultValue={editingItem?.puissance || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" />
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Puissance (CV)</label>
+                                            <input name="puissance" type="text" defaultValue={editingItem?.puissance || ''} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Disponibilité</label>
-                                            <select name="available" defaultValue={editingItem?.available.toString() || 'true'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Disponibilité</label>
+                                            <select name="available" defaultValue={editingItem?.available.toString() || 'true'} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700">
                                                 <option value="true">Disponible</option>
                                                 <option value="false">Non disponible</option>
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image du véhicule</label>
-                                            <input type="file" name="image" accept="image/*" className="w-full text-sm" />
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image du véhicule</label>
+                                            <input type="file" name="image" accept="image/*" className="w-full" />
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 px-3 py-2 md:px-6 md:py-3 flex flex-col md:flex-row md:justify-end space-y-2 md:space-y-0 md:space-x-3">
-                                    <button type="submit" className="w-full md:w-auto px-3 py-1 md:px-4 md:py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm md:text-base">{editingItem ? 'Modifier' : 'Ajouter'}</button>
-                                    <button type="button" onClick={() => { setShowAddModal(null); setEditingItem(null); }} className="w-full md:w-auto px-3 py-1 md:px-4 md:py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md border border-gray-300 dark:border-gray-600 text-sm md:text-base">Annuler</button>
+                                <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                    <button type="submit" className="w-full sm:w-auto px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">{editingItem ? 'Modifier' : 'Ajouter'}</button>
+                                    <button type="button" onClick={() => { setShowAddModal(null); setEditingItem(null); }} className="w-full sm:w-auto mt-3 sm:mt-0 sm:ml-3 px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md border border-gray-300 dark:border-gray-600">Annuler</button>
                                 </div>
                             </form>
                         </div>
@@ -635,35 +744,35 @@ const AdminDashboard = () => {
 
             {showAddModal === 'customer' && (
                 <div className="fixed inset-0 z-50 overflow-y-auto">
-                    <div className="flex items-center justify-center min-h-screen p-2 md:p-4">
-                        <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
-                        <div className="relative bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl w-full max-w-md md:max-w-lg">
+                    <div className="flex items-center justify-center min-h-screen p-4 text-center sm:block">
+                        <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 opacity-75" onClick={() => setShowAddModal(null)}></div>
+                        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full mx-2">
                             <form onSubmit={(e) => {
                                 e.preventDefault();
                                 const customerData = Object.fromEntries(new FormData(e.target));
                                 if (editingItem) handleUpdateCustomer(editingItem.id, customerData);
                                 else handleAddCustomer(customerData);
                             }}>
-                                <div className="p-3 md:p-6">
-                                    <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white mb-3 md:mb-4">{editingItem ? 'Modifier le client' : 'Ajouter un client'}</h3>
-                                    <div className="space-y-3 md:space-y-4">
+                                <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">{editingItem ? 'Modifier le client' : 'Ajouter un client'}</h3>
+                                    <div className="space-y-4">
                                         <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom</label>
-                                            <input name="name" type="text" defaultValue={editingItem?.name || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom</label>
+                                            <input name="name" type="text" defaultValue={editingItem?.name || ''} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
                                         </div>
                                         <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Téléphone</label>
-                                            <input name="phone" type="text" defaultValue={editingItem?.phone || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Téléphone</label>
+                                            <input name="phone" type="text" defaultValue={editingItem?.phone || ''} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
                                         </div>
                                         <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                                            <input name="email" type="email" defaultValue={editingItem?.email || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" />
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                                            <input name="email" type="email" defaultValue={editingItem?.email || ''} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" />
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 px-3 py-2 md:px-6 md:py-3 flex flex-col md:flex-row md:justify-end space-y-2 md:space-y-0 md:space-x-3">
-                                    <button type="submit" className="w-full md:w-auto px-3 py-1 md:px-4 md:py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm md:text-base">{editingItem ? 'Modifier' : 'Ajouter'}</button>
-                                    <button type="button" onClick={() => { setShowAddModal(null); setEditingItem(null); }} className="w-full md:w-auto px-3 py-1 md:px-4 md:py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md border border-gray-300 dark:border-gray-600 text-sm md:text-base">Annuler</button>
+                                <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                    <button type="submit" className="w-full sm:w-auto px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">{editingItem ? 'Modifier' : 'Ajouter'}</button>
+                                    <button type="button" onClick={() => { setShowAddModal(null); setEditingItem(null); }} className="w-full sm:w-auto mt-3 sm:mt-0 sm:ml-3 px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md border border-gray-300 dark:border-gray-600">Annuler</button>
                                 </div>
                             </form>
                         </div>
@@ -671,143 +780,237 @@ const AdminDashboard = () => {
                 </div>
             )}
 
-            {showAddModal === 'reservation' && (
-                <div className="fixed inset-0 z-50 overflow-y-auto">
-                    <div className="flex items-center justify-center min-h-screen p-2 md:p-4">
-                        <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
-                        <div className="relative bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl w-full max-w-md md:max-w-lg">
-                            <form onSubmit={(e) => {
-                                e.preventDefault();
-                                const reservationData = Object.fromEntries(new FormData(e.target));
-                                if (editingItem) handleUpdateReservation(editingItem.id, reservationData);
-                                else handleAddReservation(reservationData);
-                            }}>
-                                <div className="p-3 md:p-6">
-                                    <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white mb-3 md:mb-4">{editingItem ? 'Modifier la réservation' : 'Ajouter une réservation'}</h3>
-                                    <div className="space-y-3 md:space-y-4">
-                                        <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Client</label>
-                                            <select name="customer_id" defaultValue={editingItem?.customer_id || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required>
-                                                <option value="">Sélectionner un client</option>
-                                                {customers.map(customer => (
-                                                    <option key={customer.id} value={customer.id}>{customer.name} ({customer.phone})</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Véhicule</label>
-                                            <select name="car_id" defaultValue={editingItem?.car_id || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required>
-                                                <option value="">Sélectionner un véhicule</option>
-                                                {cars.map(car => (
-                                                    <option key={car.id} value={car.id}>{car.name} ({car.brand})</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date de début</label>
-                                            <input name="start_date" type="datetime-local" defaultValue={editingItem?.start_date ? new Date(editingItem.start_date).toISOString().slice(0, 16) : ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date de fin</label>
-                                            <input name="end_date" type="datetime-local" defaultValue={editingItem?.end_date ? new Date(editingItem.end_date).toISOString().slice(0, 16) : ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Statut</label>
-                                            <select name="status" defaultValue={editingItem?.status || 'pending'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700">
-                                                <option value="pending">En attente</option>
-                                                <option value="active">Active</option>
-                                                <option value="completed">Terminée</option>
-                                                <option value="canceled">Annulée</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 px-3 py-2 md:px-6 md:py-3 flex flex-col md:flex-row md:justify-end space-y-2 md:space-y-0 md:space-x-3">
-                                    <button type="submit" className="w-full md:w-auto px-3 py-1 md:px-4 md:py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm md:text-base">{editingItem ? 'Modifier' : 'Ajouter'}</button>
-                                    <button type="button" onClick={() => { setShowAddModal(null); setEditingItem(null); }} className="w-full md:w-auto px-3 py-1 md:px-4 md:py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md border border-gray-300 dark:border-gray-600 text-sm md:text-base">Annuler</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showAddModal === 'testimonial' && (
-                <div className="fixed inset-0 z-50 overflow-y-auto">
-                    <div className="flex items-center justify-center min-h-screen p-2 md:p-4">
-                        <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
-                        <div className="relative bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl w-full max-w-md md:max-w-lg">
-                            <form onSubmit={(e) => {
-                                e.preventDefault();
-                                const testimonialData = Object.fromEntries(new FormData(e.target));
-                                if (editingItem) handleUpdateTestimonial(editingItem.id, testimonialData);
-                                else handleAddTestimonial(testimonialData);
-                            }}>
-                                <div className="p-3 md:p-6">
-                                    <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white mb-3 md:mb-4">{editingItem ? 'Modifier le témoignage' : 'Ajouter un témoignage'}</h3>
-                                    <div className="space-y-3 md:space-y-4">
-                                        <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom</label>
-                                            <input name="name" type="text" defaultValue={editingItem?.name || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rôle</label>
-                                            <input name="role" type="text" defaultValue={editingItem?.role || ''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contenu</label>
-                                            <textarea name="content" className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" defaultValue={editingItem?.content || ''} rows="2 md:rows-3" required />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Note (1-5)</label>
-                                            <input name="rating" type="number" min="1" max="5" defaultValue={editingItem?.rating || '5'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" required />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 px-3 py-2 md:px-6 md:py-3 flex flex-col md:flex-row md:justify-end space-y-2 md:space-y-0 md:space-x-3">
-                                    <button type="submit" className="w-full md:w-auto px-3 py-1 md:px-4 md:py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm md:text-base">{editingItem ? 'Modifier' : 'Ajouter'}</button>
-                                    <button type="button" onClick={() => { setShowAddModal(null); setEditingItem(null); }} className="w-full md:w-auto px-3 py-1 md:px-4 md:py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md border border-gray-300 dark:border-gray-600 text-sm md:text-base">Annuler</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showConfirmDelete && (
-                <div className="fixed inset-0 z-50 overflow-y-auto">
-                    <div className="flex items-center justify-center min-h-screen p-2 md:p-4">
-                        <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
-                        <div className="relative bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl w-full max-w-md md:max-w-lg">
-                            <div className="p-3 md:p-6">
-                                <div className="flex items-start">
-                                    <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-red-100 dark:bg-red-900">
-                                        <Trash className="h-5 w-5 text-red-600 dark:text-red-400" />
-                                    </div>
-                                    <div className="ml-3 md:ml-4">
-                                        <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">
-                                            Supprimer {showConfirmDelete.type === 'car' ? 'ce véhicule' : showConfirmDelete.type === 'customer' ? 'ce client' : showConfirmDelete.type === 'reservation' ? 'cette réservation' : 'ce témoignage'}
-                                        </h3>
-                                        <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                            Êtes-vous sûr de vouloir supprimer cet élément ? Cette action ne peut pas être annulée.
-                                        </p>
-                                    </div>
-                                </div>
+{showAddModal === 'reservation' && (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex items-center justify-center min-h-screen p-4 text-center sm:block">
+            <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 opacity-75" onClick={() => setShowAddModal(null)}></div>
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full mx-2">
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const reservationData = Object.fromEntries(new FormData(e.target));
+                    if (editingItem) handleUpdateReservation(editingItem.id, reservationData);
+                    else handleAddReservation(reservationData);
+                }}>
+                    <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                            {editingItem ? 'Modifier la réservation' : 'Ajouter une réservation'}
+                        </h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Client</label>
+                                <select
+                                    name="customer_id"
+                                    defaultValue={editingItem?.customer_id || ''}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    required
+                                >
+                                    <option value="">Sélectionner un client</option>
+                                    {customers.map(customer => (
+                                        <option key={customer.id} value={customer.id}>
+                                            {customer.name} ({customer.phone})
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-                            <div className="bg-gray-50 dark:bg-gray-700 px-3 py-2 md:px-6 md:py-3 flex flex-col md:flex-row md:justify-end space-y-2 md:space-y-0 md:space-x-3">
-                                <button onClick={() => {
-                                    if (showConfirmDelete.type === 'car') handleDeleteCar(showConfirmDelete.id);
-                                    else if (showConfirmDelete.type === 'customer') handleDeleteCustomer(showConfirmDelete.id);
-                                    else if (showConfirmDelete.type === 'reservation') handleDeleteReservation(showConfirmDelete.id);
-                                    else if (showConfirmDelete.type === 'testimonial') handleDeleteTestimonial(showConfirmDelete.id);
-                                    setShowConfirmDelete(null);
-                                }} className="w-full md:w-auto px-3 py-1 md:px-4 md:py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm md:text-base">Supprimer</button>
-                                <button onClick={() => setShowConfirmDelete(null)} className="w-full md:w-auto px-3 py-1 md:px-4 md:py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md border border-gray-300 dark:border-gray-600 text-sm md:text-base">Annuler</button>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Véhicule</label>
+                                <select
+                                    name="car_id"
+                                    defaultValue={editingItem?.car_id || ''}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    required
+                                >
+                                    <option value="">Sélectionner un véhicule</option>
+                                    {cars.map(car => (
+                                        <option key={car.id} value={car.id}>
+                                            {car.name} ({car.brand})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date de début</label>
+                                <input
+                                    name="start_date"
+                                    type="datetime-local"
+                                    defaultValue={editingItem?.start_date ? new Date(editingItem.start_date).toISOString().slice(0, 16) : ''}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date de fin</label>
+                                <input
+                                    name="end_date"
+                                    type="datetime-local"
+                                    defaultValue={editingItem?.end_date ? new Date(editingItem.end_date).toISOString().slice(0, 16) : ''}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Statut</label>
+                                <select
+                                    name="status"
+                                    defaultValue={editingItem?.status || 'pending'}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                >
+                                    <option value="pending">En attente</option>
+                                    <option value="active">Active</option>
+                                    <option value="completed">Terminée</option>
+                                    <option value="canceled">Annulée</option>
+                                </select>
                             </div>
                         </div>
                     </div>
+                    <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button
+                            type="submit"
+                            className="w-full sm:w-auto px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        >
+                            {editingItem ? 'Modifier' : 'Ajouter'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => { setShowAddModal(null); setEditingItem(null); }}
+                            className="w-full sm:w-auto mt-3 sm:mt-0 sm:ml-3 px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600"
+                        >
+                            Annuler
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+)}
+
+{showAddModal === 'testimonial' && (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex items-center justify-center min-h-screen p-4 text-center sm:block">
+            <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 opacity-75" onClick={() => setShowAddModal(null)}></div>
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full mx-2">
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const testimonialData = Object.fromEntries(new FormData(e.target));
+                    if (editingItem) handleUpdateTestimonial(editingItem.id, testimonialData);
+                    else handleAddTestimonial(testimonialData);
+                }}>
+                    <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                            {editingItem ? 'Modifier le témoignage' : 'Ajouter un témoignage'}
+                        </h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom</label>
+                                <input
+                                    name="name"
+                                    type="text"
+                                    defaultValue={editingItem?.name || ''}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rôle</label>
+                                <input
+                                    name="role"
+                                    type="text"
+                                    defaultValue={editingItem?.role || ''}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contenu</label>
+                                <textarea
+                                    name="content"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    defaultValue={editingItem?.content || ''}
+                                    rows="3"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Note (1-5)</label>
+                                <input
+                                    name="rating"
+                                    type="number"
+                                    min="1"
+                                    max="5"
+                                    defaultValue={editingItem?.rating || '5'}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    required
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button
+                            type="submit"
+                            className="w-full sm:w-auto px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        >
+                            {editingItem ? 'Modifier' : 'Ajouter'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => { setShowAddModal(null); setEditingItem(null); }}
+                            className="w-full sm:w-auto mt-3 sm:mt-0 sm:ml-3 px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600"
+                        >
+                            Annuler
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+)}
+
+{showConfirmDelete && (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex items-center justify-center min-h-screen p-4 text-center sm:block">
+            <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 opacity-75" onClick={() => setShowConfirmDelete(null)}></div>
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full mx-2">
+                <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div className="sm:flex sm:items-start">
+                        <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+                            <Trash className="h-6 w-6 text-red-600 dark:text-red-400" />
+                        </div>
+                        <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                                Supprimer {showConfirmDelete.type === 'car' ? 'ce véhicule' : showConfirmDelete.type === 'customer' ? 'ce client' : showConfirmDelete.type === 'reservation' ? 'cette réservation' : 'ce témoignage'}
+                            </h3>
+                            <div className="mt-2">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    Êtes-vous sûr de vouloir supprimer cet élément ? Cette action ne peut pas être annulée.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            )}
+                <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button
+                        onClick={() => {
+                            if (showConfirmDelete.type === 'car') handleDeleteCar(showConfirmDelete.id);
+                            else if (showConfirmDelete.type === 'customer') handleDeleteCustomer(showConfirmDelete.id);
+                            else if (showConfirmDelete.type === 'reservation') handleDeleteReservation(showConfirmDelete.id);
+                            else if (showConfirmDelete.type === 'testimonial') handleDeleteTestimonial(showConfirmDelete.id);
+                            setShowConfirmDelete(null);
+                        }}
+                        className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                        Supprimer
+                    </button>
+                    <button
+                        onClick={() => setShowConfirmDelete(null)}
+                        className="w-full sm:w-auto mt-3 sm:mt-0 sm:ml-3 px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600"
+                    >
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+)}
         </div>
     );
 };
