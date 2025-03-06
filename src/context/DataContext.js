@@ -19,7 +19,7 @@ export function DataProvider({ children }) {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_BASE_URL = 'https://luxury-drive-back.onrender.com/api';
+  const API_BASE_URL = 'https://backend-iota-peach.vercel.app/api';
 
   const fetchData = async () => {
     setIsLoading(true);
