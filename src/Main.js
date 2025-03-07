@@ -1193,7 +1193,7 @@ const Features = () => {
                             <div className="flex items-center space-x-2">
                                 <span className="text-sm text-gray-600 dark:text-gray-400">Filtrer:</span>
                                 <div className="flex space-x-1">
-                                    {[0, ...Array(5).keys().map(i => i+1)].map((rating) => (
+                                {[0, 1, 2, 3, 4, 5].map((rating) => (
                                         <button
                                             key={rating}
                                             onClick={() => {
