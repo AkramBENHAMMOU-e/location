@@ -623,284 +623,322 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
     };
     
     const Fleet = () => {
-    const { cars: fleetCars, updateCar, addCustomer, addReservation } = useData();
-
-    const [userVotes, setUserVotes] = useState(() => {
-        try {
+        const { cars: fleetCars, updateCar, addCustomer, addReservation } = useData();
+      
+        const [userVotes, setUserVotes] = useState(() => {
+          try {
             const storedUserVotes = localStorage.getItem('userVotes');
             return storedUserVotes ? JSON.parse(storedUserVotes) : {};
-        } catch (error) {
+          } catch (error) {
             console.error('Error parsing userVotes from localStorage:', error);
             return {};
-        }
-    });
-
-    const [selectedBrand, setSelectedBrand] = useState(() => {
-        const savedBrand = localStorage.getItem('selectedBrand');
-        return savedBrand ? savedBrand.toLowerCase() : 'tous';
-    });
-
-    const brandCorrections = {
-        'dacia': 'dacia',
-        'renault': 'renault',
-        'tesla': 'tesla',
-        'volkswagen': 'volkswagen',
-        'ford': 'ford',
-        'kia': 'kia',
-        'bmw': 'bmw',
-        'peugeot': 'peugeot',
-        'mercedes': 'mercedes',
-        'citroen': 'citroen',
-        'audi': 'audi',
-        'fiat': 'fiat',
-        'opel': 'opel',
-        'skoda': 'skoda',
-        'seat': 'seat',
-        'toyota': 'toyota',
-        'nissan': 'nissan',
-        'honda': 'honda',
-        'mitsubishi': 'mitsubishi',
-        'suzuki': 'suzuki',
-        'chevrolet': 'chevrolet',
-        'dfsk': 'dfsk',
-    };
-
-    const correctedFleetCars = fleetCars.map(car => ({
-        ...car,
-        brand: brandCorrections[car.brand.toLowerCase()] || car.brand.toLowerCase(),
-    }));
-
-    const brands = ['tous', ...new Set(correctedFleetCars.map(car => car.brand))];
-
-    const handleBrandSelect = (brand) => {
-        setSelectedBrand(brand.toLowerCase());
-    };
-
-    useEffect(() => {
-        localStorage.setItem('selectedBrand', selectedBrand);
-        localStorage.setItem('userVotes', JSON.stringify(userVotes));
-      }, [selectedBrand, userVotes]);
-
-      const handleStarClick = async (carId) => {
-        if (!userVotes[carId]) {
-          // Optimistic UI update
-          setUserVotes(prev => ({ ...prev, [carId]: true }));
+          }
+        });
       
-          try {
-            const car = correctedFleetCars.find(c => c.id === carId);
-            if (!car) return;
+        const [selectedBrand, setSelectedBrand] = useState(() => {
+          const savedBrand = localStorage.getItem('selectedBrand');
+          return savedBrand ? savedBrand.toLowerCase() : 'tous';
+        });
       
-            const updatedVoteCount = (car.vote || 0) + 1;
-            const formData = new FormData();
-            formData.append('name', car.name);
-            formData.append('brand', car.brand);
-            formData.append('price', car.price);
-            formData.append('available', car.available.toString());
-            formData.append('description', car.description || '');
-            formData.append('consumption', car.consumption || '');
-            formData.append('acceleration', car.acceleration || '');
-            formData.append('vote', updatedVoteCount);
+        const brandCorrections = {
+          dacia: 'dacia',
+          renault: 'renault',
+          tesla: 'tesla',
+          volkswagen: 'volkswagen',
+          ford: 'ford',
+          kia: 'kia',
+          bmw: 'bmw',
+          peugeot: 'peugeot',
+          mercedes: 'mercedes',
+          citroen: 'citroen',
+          audi: 'audi',
+          fiat: 'fiat',
+          opel: 'opel',
+          skoda: 'skoda',
+          seat: 'seat',
+          toyota: 'toyota',
+          nissan: 'nissan',
+          honda: 'honda',
+          mitsubishi: 'mitsubishi',
+          suzuki: 'suzuki',
+          chevrolet: 'chevrolet',
+          dfsk: 'dfsk',
+        };
       
-            await updateCar(carId, formData);
+        // Vérification que fleetCars est un tableau, sinon tableau vide par défaut
+        const correctedFleetCars = Array.isArray(fleetCars)
+          ? fleetCars.map((car) => ({
+              ...car,
+              brand: brandCorrections[car.brand.toLowerCase()] || car.brand.toLowerCase(),
+            }))
+          : [];
+      
+        const brands = ['tous', ...new Set(correctedFleetCars.map((car) => car.brand))];
+      
+        const handleBrandSelect = (brand) => {
+          setSelectedBrand(brand.toLowerCase());
+        };
+      
+        useEffect(() => {
+          localStorage.setItem('selectedBrand', selectedBrand);
+          localStorage.setItem('userVotes', JSON.stringify(userVotes));
+        }, [selectedBrand, userVotes]);
+      
+        const handleStarClick = async (carId) => {
+          if (!userVotes[carId]) {
+            setUserVotes((prev) => ({ ...prev, [carId]: true }));
+      
+            try {
+              const car = correctedFleetCars.find((c) => c.id === carId);
+              if (!car) return;
+      
+              const updatedVoteCount = (car.vote || 0) + 1;
+              const formData = new FormData();
+              formData.append('name', car.name);
+              formData.append('brand', car.brand);
+              formData.append('price', car.price);
+              formData.append('available', car.available.toString());
+              formData.append('description', car.description || '');
+              formData.append('consumption', car.consumption || '');
+              formData.append('acceleration', car.acceleration || '');
+              formData.append('vote', updatedVoteCount);
+      
+              await updateCar(carId, formData);
+              Swal.fire({
+                icon: 'success',
+                title: 'Vote enregistré !',
+                text: 'Merci pour votre vote.',
+                confirmButtonColor: '#10B981',
+              });
+            } catch (error) {
+              console.error('Error updating vote:', error);
+              setUserVotes((prev) => ({ ...prev, [carId]: false }));
+              Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: 'Une erreur est survenue lors du vote.',
+                confirmButtonColor: '#EF4444',
+              });
+            }
+          } else {
             Swal.fire({
-              icon: 'success',
-              title: 'Vote enregistré !',
-              text: 'Merci pour votre vote.',
-              confirmButtonColor: '#10B981',
-            });
-          } catch (error) {
-            console.error('Error updating vote:', error);
-            // Revert optimistic update on failure
-            setUserVotes(prev => ({ ...prev, [carId]: false }));
-            Swal.fire({
-              icon: 'error',
-              title: 'Erreur',
-              text: 'Une erreur est survenue lors du vote.',
-              confirmButtonColor: '#EF4444',
+              icon: 'info',
+              title: 'Déjà voté',
+              text: 'Vous avez déjà voté pour cette voiture.',
+              confirmButtonColor: '#3085d6',
             });
           }
-        } else {
-          Swal.fire({
-            icon: 'info',
-            title: 'Déjà voté',
-            text: 'Vous avez déjà voté pour cette voiture.',
-            confirmButtonColor: '#3085d6',
-          });
-        }
-      };
-
-    const hasUserVoted = (carId) => userVotes[carId] === true;
-
-    const filteredCars = correctedFleetCars.filter(car => 
-        selectedBrand === 'tous' || car.brand === selectedBrand
-    );
-
-    console.log('Filtered Cars:', filteredCars);
-
-    const logoMap = {
-        'tous': Logo,
-        'dacia': DaciaLogo,
-        'renault': RenaultLogo,
-        'tesla': TeslaLogo,
-        'volkswagen': VolswagenLogo,
-        'ford': FordLogo,
-        'kia': KiaLogo,
-        'bmw': BmwLogo,
-        'peugeot': PeugeotLogo,
-        'mercedes': MercedesLogo,
-        'citroen': CitroenLogo,
-        'audi': AudiLogo,
-        'fiat': FiatLogo,
-        'opel': OpelLogo,
-        'skoda': SkodaLogo,
-        'seat': SeatLogo,
-        'toyota': ToyotaLogo,
-        'nissan': NissanLogo,
-        'honda': HondaLogo,
-        'mitsubishi': MitsubishiLogo,
-        'suzuki': SuzukiLogo,
-        'chevrolet': ChevroletLogo,
-        'dfsk': DfskLogo,
-    };
-
-    return (
-        <section id="fleet" className="py-8 sm:py-16 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+        };
+      
+        const hasUserVoted = (carId) => userVotes[carId] === true;
+      
+        // Filtrer les voitures, correctedFleetCars est garanti d'être un tableau
+        const filteredCars = correctedFleetCars.filter(
+          (car) => selectedBrand === 'tous' || car.brand === selectedBrand
+        );
+      
+        console.log('Filtered Cars:', filteredCars);
+      
+        const logoMap = {
+          tous: Logo,
+          dacia: DaciaLogo,
+          renault: RenaultLogo,
+          tesla: TeslaLogo,
+          volkswagen: VolswagenLogo,
+          ford: FordLogo,
+          kia: KiaLogo,
+          bmw: BmwLogo,
+          peugeot: PeugeotLogo,
+          mercedes: MercedesLogo,
+          citroen: CitroenLogo,
+          audi: AudiLogo,
+          fiat: FiatLogo,
+          opel: OpelLogo,
+          skoda: SkodaLogo,
+          seat: SeatLogo,
+          toyota: ToyotaLogo,
+          nissan: NissanLogo,
+          honda: HondaLogo,
+          mitsubishi: MitsubishiLogo,
+          suzuki: SuzukiLogo,
+          chevrolet: ChevroletLogo,
+          dfsk: DfskLogo,
+        };
+      
+        return (
+          <section
+            id="fleet"
+            className="py-8 sm:py-16 bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
+          >
             <div className="max-w-7xl mx-auto px-3 sm:px-6">
-                <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-12 text-gray-900 dark:text-gray-100">
-                    Notre flotte de véhicules
-                </h2>
-                <div className="mb-6 sm:mb-8 flex overflow-x-auto pb-2 sm:flex-wrap sm:justify-center sm:overflow-visible gap-2 sm:gap-4 md:gap-6 hide-scrollbar">
-                    {brands.map((brand) => (
-                        <motion.button
-                            key={brand}
-                            onClick={() => handleBrandSelect(brand)}
-                            whileHover={{ scale: 1.05 }}
-                            className={`flex-shrink-0 flex flex-col items-center p-2 sm:p-3 md:p-4 rounded-xl transition-all ${selectedBrand === brand ? 'bg-white dark:bg-gray-800 shadow-lg border-2 border-red-500' : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 border-2 border-transparent'}`}
-                        >
-                            <img
-                                src={logoMap[brand] || Logo}
-                                alt={brand}
-                                className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 object-contain mb-1 sm:mb-2"
-                            />
-                            <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300">
-                                {brand.charAt(0).toUpperCase() + brand.slice(1)}
+              <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-12 text-gray-900 dark:text-gray-100">
+                Notre flotte de véhicules
+              </h2>
+              <div className="mb-6 sm:mb-8 flex overflow-x-auto pb-2 sm:flex-wrap sm:justify-center sm:overflow-visible gap-2 sm:gap-4 md:gap-6 hide-scrollbar">
+                {brands.map((brand) => (
+                  <motion.button
+                    key={brand}
+                    onClick={() => handleBrandSelect(brand)}
+                    whileHover={{ scale: 1.05 }}
+                    className={`flex-shrink-0 flex flex-col items-center p-2 sm:p-3 md:p-4 rounded-xl transition-all ${
+                      selectedBrand === brand
+                        ? 'bg-white dark:bg-gray-800 shadow-lg border-2 border-red-500'
+                        : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 border-2 border-transparent'
+                    }`}
+                  >
+                    <img
+                      src={logoMap[brand] || Logo}
+                      alt={brand}
+                      className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 object-contain mb-1 sm:mb-2"
+                    />
+                    <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300">
+                      {brand.charAt(0).toUpperCase() + brand.slice(1)}
+                    </span>
+                  </motion.button>
+                ))}
+              </div>
+              {/* Vérification que filteredCars est un tableau avant d'utiliser .map() */}
+              {Array.isArray(filteredCars) && filteredCars.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+                  {filteredCars.map((car) => (
+                    <motion.div
+                      key={car.id}
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-700"
+                    >
+                      <div className="relative h-28 sm:h-48">
+                        {car.image_url ? (
+                          <img
+                            src={car.image_url}
+                            alt={car.name}
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <img
+                            src={
+                              car.brand === 'dacia'
+                                ? Dacia
+                                : car.brand === 'renault'
+                                ? Clio
+                                : car.brand === 'volkswagen'
+                                ? Touarg
+                                : Dacia
+                            }
+                            alt={car.name}
+                            className="w-full h-full object-contain"
+                          />
+                        )}
+                        <div className="absolute top-1 sm:top-4 right-1 sm:right-4 bg-red-500 text-white px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
+                          {car.price}DH/j
+                        </div>
+                        <div className="absolute top-1 sm:top-4 left-1 sm:left-4 bg-white dark:bg-gray-800 p-1 sm:p-2 rounded-full shadow-md">
+                          <img
+                            src={logoMap[car.brand] || Logo}
+                            alt={`${car.brand} Logo`}
+                            className="w-4 h-4 sm:w-8 sm:h-8 object-contain"
+                          />
+                        </div>
+                      </div>
+                      <div className="p-2 sm:p-6">
+                        <div className="flex justify-between items-start mb-1 sm:mb-2">
+                          <h3 className="text-sm sm:text-xl font-bold text-gray-800 dark:text-gray-200 line-clamp-1">
+                            {car.name}
+                          </h3>
+                          <div
+                            className={`${
+                              car.available
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+                            } px-1.5 py-0.5 rounded text-xs flex items-center space-x-1`}
+                          >
+                            <span
+                              className={`inline-block w-2 h-2 rounded-full ${
+                                car.available ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                              }`}
+                            ></span>
+                            <span>{car.available ? 'Disponible' : 'Réservée'}</span>
+                          </div>
+                        </div>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-2 sm:mb-4 line-clamp-2 sm:line-clamp-3">
+                          {car.description || 'Pas de description'}
+                        </p>
+                        <div className="grid grid-cols-2 gap-1 sm:gap-2 mb-2 sm:mb-4">
+                          <div className="flex items-center">
+                            <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
+                            <span className="text-xs sm:text-sm">
+                              {car.acceleration || 'N/A'}
                             </span>
-                        </motion.button>
-                    ))}
-                </div>
-                {filteredCars.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
-                        {filteredCars.map((car) => (
-                            <motion.div
-                                key={car.id}
-                                whileHover={{ y: -5, scale: 1.02 }}
-                                className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-700"
-                            >
-                                <div className="relative h-28 sm:h-48">
-                                {car.image_url ? (
-        <img 
-            src={car.image_url} // Use Cloudinary URL directly
-            alt={car.name} 
-            className="w-full h-full object-contain"
-            onError={(e) => { e.target.style.display = 'none'; }}
-        />
-    ) : (
-        <img 
-            src={
-                car.brand === "dacia" ? Dacia :
-                car.brand === "renault" ? Clio :
-                car.brand === "volkswagen" ? Touarg :
-                Dacia // Default fallback
-            }
-            alt={car.name}
-            className="w-full h-full object-contain"
-        />
-    )}
-                                    <div className="absolute top-1 sm:top-4 right-1 sm:right-4 bg-red-500 text-white px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
-                                        {car.price}DH/j
-                                    </div>
-                                    <div className="absolute top-1 sm:top-4 left-1 sm:left-4 bg-white dark:bg-gray-800 p-1 sm:p-2 rounded-full shadow-md">
-                                        <img 
-                                            src={logoMap[car.brand] || Logo} 
-                                            alt={`${car.brand} Logo`} 
-                                            className="w-4 h-4 sm:w-8 sm:h-8 object-contain" 
-                                        />
-                                    </div>
-                                </div>
-                                <div className="p-2 sm:p-6">
-                                    <div className="flex justify-between items-start mb-1 sm:mb-2">
-                                        <h3 className="text-sm sm:text-xl font-bold text-gray-800 dark:text-gray-200 line-clamp-1">{car.name}</h3>
-                                        <div className={`${car.available ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'} px-1.5 py-0.5 rounded text-xs flex items-center space-x-1`}>
-                                            <span className={`inline-block w-2 h-2 rounded-full ${car.available ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
-                                            <span>{car.available ? 'Disponible' : 'Réservée'}</span>
-                                        </div>
-                                    </div>
-                                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-2 sm:mb-4 line-clamp-2 sm:line-clamp-3">{car.description || 'Pas de description'}</p>
-                                    <div className="grid grid-cols-2 gap-1 sm:gap-2 mb-2 sm:mb-4">
-                                        <div className="flex items-center">
-                                            <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
-                                            <span className="text-xs sm:text-sm">{car.acceleration || 'N/A'}</span>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
-                                            <span className="text-xs sm:text-sm">{car.consumption || 'N/A'}</span>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <Car className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
-                                            <span className="text-xs sm:text-sm">{car.puissance || 'N/A'}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center mb-2 sm:mb-4">
-                                    <button
-                                    onClick={() => handleStarClick(car.id)}
-                                    disabled={hasUserVoted(car.id)}
-                                    className={`transition-all ${hasUserVoted(car.id) ? 'opacity-75 cursor-not-allowed' : 'hover:scale-110'}`}
-                                    >
-                                    <Star
-                                        className="w-4 h-4 sm:w-6 sm:h-6"
-                                        fill={hasUserVoted(car.id) ? 'gold' : 'none'}
-                                        stroke="currentColor"
-                                    />
-                                    </button>
-                                    <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                                    {car.vote || 0} votes
-                                    </span>
-                                    </div>
-                                    <button
-                                        onClick={() => handleWhatsAppReservation(
-                                            car.name,
-                                            car.id,
-                                            addCustomer,
-                                            addReservation
-                                        )}
-                                        className={`w-full py-1.5 sm:py-3 text-xs sm:text-base ${car.available ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 cursor-not-allowed'} text-white rounded-lg sm:rounded-xl transition-colors flex items-center justify-center space-x-1 sm:space-x-2 font-medium`}
-                                        disabled={!car.available}
-                                    >
-                                        <Car className="w-3 h-3 sm:w-5 sm:h-5" />
-                                        <span>{car.available ? 'Réserver' : 'Non disponible'}</span>
-                                    </button>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-8 sm:py-12">
-                        <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🚗</div>
-                        <h3 className="text-lg sm:text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Aucune voiture trouvée dans cette catégorie
-                        </h3>
+                          </div>
+                          <div className="flex items-center">
+                            <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
+                            <span className="text-xs sm:text-sm">
+                              {car.consumption || 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex items-center">
+                            <Car className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
+                            <span className="text-xs sm:text-sm">
+                              {car.puissance || 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center mb-2 sm:mb-4">
+                          <button
+                            onClick={() => handleStarClick(car.id)}
+                            disabled={hasUserVoted(car.id)}
+                            className={`transition-all ${
+                              hasUserVoted(car.id) ? 'opacity-75 cursor-not-allowed' : 'hover:scale-110'
+                            }`}
+                          >
+                            <Star
+                              className="w-4 h-4 sm:w-6 sm:h-6"
+                              fill={hasUserVoted(car.id) ? 'gold' : 'none'}
+                              stroke="currentColor"
+                            />
+                          </button>
+                          <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                            {car.vote || 0} votes
+                          </span>
+                        </div>
                         <button
-                            onClick={() => handleBrandSelect('tous')}
-                            className="mt-3 sm:mt-4 px-4 sm:px-5 py-2 text-sm sm:text-base bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                          onClick={() =>
+                            handleWhatsAppReservation(car.name, car.id, addCustomer, addReservation)
+                          }
+                          className={`w-full py-1.5 sm:py-3 text-xs sm:text-base ${
+                            car.available
+                              ? 'bg-green-500 hover:bg-green-600'
+                              : 'bg-gray-400 cursor-not-allowed'
+                          } text-white rounded-lg sm:rounded-xl transition-colors flex items-center justify-center space-x-1 sm:space-x-2 font-medium`}
+                          disabled={!car.available}
                         >
-                            Voir toutes les voitures
+                          <Car className="w-3 h-3 sm:w-5 sm:h-5" />
+                          <span>{car.available ? 'Réserver' : 'Non disponible'}</span>
                         </button>
-                    </div>
-                )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 sm:py-12">
+                  <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🚗</div>
+                  <h3 className="text-lg sm:text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Aucune voiture trouvée dans cette catégorie
+                  </h3>
+                  <button
+                    onClick={() => handleBrandSelect('tous')}
+                    className="mt-3 sm:mt-4 px-4 sm:px-5 py-2 text-sm sm:text-base bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                  >
+                    Voir toutes les voitures
+                  </button>
+                </div>
+              )}
             </div>
-        </section>
-    );
-};
+          </section>
+        );
+      };
 
 const Features = () => {
     // Feature data with added emoji alternatives for better visual appeal
