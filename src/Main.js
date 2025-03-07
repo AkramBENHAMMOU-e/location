@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import "./App.css";
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaFacebook, FaInstagram, FaWhatsapp, FaTimes, FaBars,FaChevronDown  } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaWhatsapp, FaTimes, FaBars,FaChevronDown, FaCogs  } from "react-icons/fa";
 import { 
   Car, 
   Sun, 
@@ -19,6 +19,10 @@ import {
   CreditCard,
   PhoneCall,
   Shield,
+  Repeat,
+  Bolt,
+  Fuel,
+  Bold,
 } from 'lucide-react';
 import Swal from 'sweetalert2';
  import Logo from './assets/logo11-removebg-preview.png';
@@ -206,6 +210,7 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
             power: "130 ch",
             acceleration: "10.6s",
             consumption: "4.8L/100km",
+            transmission : "Automatique",
             category: "Économique",
             description: "Un SUV robuste et économique",
             images: [DaciaLogo, DaciaLogo, DaciaLogo]
@@ -220,6 +225,7 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
             power: "100 ch",
             acceleration: "11.8s",
             consumption: "5.0L/100km",
+            transmission : "Manuelle",
             category: "Économique",
             description: "Une citadine agile et moderne",
             images: [RenaultLogo, RenaultLogo, RenaultLogo]
@@ -234,6 +240,7 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
             power: "510 ch",
             acceleration: "3.4s",
             consumption: "12.3L/100km",
+            transmission : "Automatique",
             category: "Luxe",
             description: "Un SUV de luxe puissant",
             images: [VolswagenLogo, VolswagenLogo, VolswagenLogo]
@@ -402,11 +409,13 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
     };
 
     const Hero = () => {
+        // Animation pour l'effet d'apparition progressive
         const fadeInUp = {
             initial: { opacity: 0, y: 20 },
             animate: { opacity: 1, y: 0, transition: { duration: 0.6 } }
         };
     
+        // Fonction pour récupérer le logo de la marque de voiture
         const getCarLogo = (carBrand) => {
             if (!carBrand) return DaciaLogo;
         
@@ -439,9 +448,10 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
             return logoMap[brand] || DaciaLogo;
         };
     
+        // Fonction pour récupérer l'image de la voiture
         const getCarImage = (car) => {
             if (car.image_url) {
-                return car.image_url; // Use the full Cloudinary URL directly
+                return car.image_url; // Utilise l'URL complète de Cloudinary directement
             }
         
             const brand = car.brand?.toLowerCase();
@@ -451,7 +461,7 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
                 'volkswagen': Touarg
             };
         
-            return imageMap[brand] || Dacia; // Fallback for default images
+            return imageMap[brand] || Dacia; // Image par défaut si non trouvée
         };
     
         return (
@@ -466,16 +476,21 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.5 }}
                         >
+                            {/* Contenu textuel */}
                             <div className="space-y-6 md:space-y-10 order-2 lg:order-1">
-                                <motion.div 
-                                    className="inline-flex items-center space-x-3 bg-gradient-to-r from-[#d4af37]/20 to-red-600/20 px-4 py-2 md:px-5 md:py-3 rounded-full backdrop-blur-sm"
-                                    {...fadeInUp}
-                                >
-                                    <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-500" />
-                                    <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-200">
-                                        {heroDisplayCars[currentCarIndex]?.available ? 'Disponible maintenant' : 'Réservation possible'}
-                                    </span>
-                                </motion.div>
+                                {/* Badge de disponibilité */}
+                                <div className="flex justify-center sm:justify-start mb-4 sm:mb-0">
+                                    <motion.div 
+                                        className="inline-flex items-center space-x-3 bg-gradient-to-r from-[#d4af37]/20 to-red-600/20 px-4 py-2 md:px-5 md:py-3 rounded-full backdrop-blur-sm"
+                                        {...fadeInUp}
+                                    >
+                                        <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-500" />
+                                        <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-200">
+                                            {heroDisplayCars[currentCarIndex]?.available ? 'Disponible maintenant' : 'Réservation possible'}
+                                        </span>
+                                    </motion.div>
+                                </div>
+                                {/* Titre principal */}
                                 <motion.h1 
                                     className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight bg-gradient-to-r from-gray-800 dark:from-gray-100 to-[#d4af37] bg-clip-text text-transparent"
                                     {...fadeInUp}
@@ -486,16 +501,16 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
                                         {heroDisplayCars[currentCarIndex]?.description || 'Une expérience de conduite exceptionnelle'}
                                     </span>
                                 </motion.h1>
+                                {/* Spécifications techniques */}
                                 <motion.div 
-                                    className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4"
-                                    {...fadeInUp}
+                                    className="grid grid-cols-2 gap-3 md:gap-4"
                                     transition={{ delay: 0.2 }}
                                 >
                                     {[
-                                        { icon: <Car />, label: 'Puissance', value: heroDisplayCars[currentCarIndex]?.puissance || 'N/A' },  // Correct spelling
+                                        { icon: <Bolt />, label: 'Puissance', value: heroDisplayCars[currentCarIndex]?.puissance || 'N/A' },
                                         { icon: <Clock />, label: '0-100 km/h', value: heroDisplayCars[currentCarIndex]?.acceleration || 'N/A' },
-                                        { icon: <Settings />, label: 'Consommation', value: heroDisplayCars[currentCarIndex]?.consumption || 'N/A' },
-                                        { icon: <Settings />, label: 'Transmission', value: heroDisplayCars[currentCarIndex]?.transmission || 'N/A' }
+                                        { icon: <Fuel />, label: 'Consommation', value: heroDisplayCars[currentCarIndex]?.consumption || 'N/A' },
+                                        { icon: <Repeat />, label: 'Transmission', value: heroDisplayCars[currentCarIndex]?.transmission || 'N/A' }
                                     ].map((spec, i) => (
                                         <div 
                                             key={i}
@@ -513,6 +528,7 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
                                         </div>
                                     ))}
                                 </motion.div>
+                                {/* Boutons d'action */}
                                 <motion.div 
                                     className="flex flex-col sm:flex-row gap-3 md:gap-4"
                                     {...fadeInUp}
@@ -538,7 +554,8 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
                                     </div>
                                 </motion.div>
                             </div>
-                            <div className="relative group order-1 lg:order-2">
+                            {/* Section image et logos */}
+                            <div className="relative group order-1 lg:order-2 mb-8">
                                 <motion.div
                                     className="relative rounded-2xl lg:rounded-3xl overflow-hidden"
                                     initial={{ opacity: 0, scale: 0.95 }}
@@ -566,8 +583,8 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
                                         </motion.div>
                                     </div>
                                 </motion.div>
-                                {/* Modified this div to fix logo buttons display */}
-                                <div className="absolute -bottom-28 md:-bottom-32 left-1/2 transform -translate-x-1/2 w-full flex justify-center">
+                                {/* Boutons de logos des voitures */}
+                                <div className="absolute -bottom-28 md:-bottom-32 left-1/2 transform -translate-x-1/2 w-full flex justify-center mb-12 mt-8">
                                     <div className="flex space-x-3 md:space-x-4 py-4 px-2 overflow-x-auto overflow-y-visible">
                                         {heroDisplayCars.map((car, index) => (
                                             <motion.button
@@ -675,6 +692,7 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
               formData.append('description', car.description || '');
               formData.append('consumption', car.consumption || '');
               formData.append('acceleration', car.acceleration || '');
+              formData.append('transmission', car.transmission || '');
               formData.append('vote', updatedVoteCount);
       
               await updateCar(carId, formData);
@@ -847,15 +865,21 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
                             </span>
                           </div>
                           <div className="flex items-center">
-                            <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
+                            <Fuel className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
                             <span className="text-xs sm:text-sm">
                               {car.consumption || 'N/A'}
                             </span>
                           </div>
                           <div className="flex items-center">
-                            <Car className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
+                            <Bold className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
                             <span className="text-xs sm:text-sm">
                               {car.puissance || 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex items-center">
+                            <Repeat className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-500 dark:text-gray-400" />
+                            <span className="text-xs sm:text-sm">
+                              {car.transmission || 'N/A'}
                             </span>
                           </div>
                         </div>
