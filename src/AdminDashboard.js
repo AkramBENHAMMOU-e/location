@@ -720,6 +720,10 @@ const AdminDashboard = () => {
                                             <input name="puissance" type="text" defaultValue={editingItem?.puissance || ''} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" />
                                         </div>
                                         <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Transmission</label>
+                                            <input name="transmission" type="text" defaultValue={editingItem?.transmission || ''} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700" />
+                                        </div>
+                                        <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Disponibilité</label>
                                             <select name="available" defaultValue={editingItem?.available.toString() || 'true'} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700">
                                                 <option value="true">Disponible</option>

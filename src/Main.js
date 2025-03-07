@@ -293,33 +293,6 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
     }, [autoScroll, heroDisplayCars.length]);
 
 
-    const testimonials = [
-        {
-            id: 1,
-            name: "Jean Dupont",
-            role: "Chef d'entreprise",
-            image: "/api/placeholder/64/64",
-            content: "Une expérience exceptionnelle ! La Renault Clio était parfaite pour mon trajet quotidien.",
-            rating: 5
-        },
-        {
-            id: 2,
-            name: "Marie Laurent",
-            role: "Influenceuse",
-            image: "/api/placeholder/64/64",
-            content: "J'ai loué la Tesla Model 3 pour un événement. L'équipe a été très professionnelle.",
-            rating: 5
-        },
-        {
-            id: 3,
-            name: "Pierre Martin",
-            role: "Photographe",
-            image: "/api/placeholder/64/64",
-            content: "La Volkswagen Touareg était exactement ce que je recherchais. Service remarquable.",
-            rating: 5
-        }
-    ];
-
     const categories = ['Tous', 'Économique', 'Luxe', 'Électrique'];
 
     const Header = () => {
@@ -521,7 +494,8 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
                                     {[
                                         { icon: <Car />, label: 'Puissance', value: heroDisplayCars[currentCarIndex]?.puissance || 'N/A' },  // Correct spelling
                                         { icon: <Clock />, label: '0-100 km/h', value: heroDisplayCars[currentCarIndex]?.acceleration || 'N/A' },
-                                        { icon: <Settings />, label: 'Consommation', value: heroDisplayCars[currentCarIndex]?.consumption || 'N/A' }
+                                        { icon: <Settings />, label: 'Consommation', value: heroDisplayCars[currentCarIndex]?.consumption || 'N/A' },
+                                        { icon: <Settings />, label: 'Transmission', value: heroDisplayCars[currentCarIndex]?.transmission || 'N/A' }
                                     ].map((spec, i) => (
                                         <div 
                                             key={i}
