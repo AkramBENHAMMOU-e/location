@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import "./App.css";
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence,useScroll, useTransform } from 'framer-motion';
 import { FaFacebook, FaInstagram, FaWhatsapp, FaTimes, FaBars,FaChevronDown, FaCogs  } from "react-icons/fa";
 import { 
   Car, 
@@ -14,8 +14,7 @@ import {
   Mail,
   MapPin,
   CheckCircle,
-  ChevronLeft,
-  ChevronRight,
+  ChevronLeft, ChevronRight, User, Quote, ThumbsUp, Sparkles,
   CreditCard,
   PhoneCall,
   Shield,
@@ -99,19 +98,18 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
             <style>
                 .form-container {
                     width: 100%;
-                    max-width: 300px;
                     margin: 0 auto;
                     padding: 0;
                 }
                 .form-group {
-                    margin-bottom: 12px;
+                    margin-bottom: 16px;
                 }
                 .swal2-input, .swal2-select {
                     height: 40px;
                     width: 100% !important;
                     margin: 0 !important;
                     padding: 8px 12px !important;
-                    font-size: 14px !important;
+                    font-size: 15px !important;
                     border-radius: 8px !important;
                     border: 1px solid #ddd !important;
                     box-shadow: none !important;
@@ -120,17 +118,39 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
                 .input-label {
                     display: block;
                     margin-bottom: 5px;
-                    font-size: 13px;
+                    font-size: 14px;
                     font-weight: 500;
                     color: #555;
                 }
-                @media (max-width: 480px) {
+                /* Desktop styles */
+                @media (min-width: 768px) {
+                    .form-container {
+                        max-width: 450px;
+                        padding: 0 10px;
+                    }
+                    .swal2-popup {
+                        width: auto !important;
+                        min-width: 500px !important;
+                        padding: 1.5em !important;
+                    }
+                    .swal2-title {
+                        font-size: 24px !important;
+                    }
+                    .swal2-input, .swal2-select {
+                        font-size: 16px !important;
+                    }
+                    .input-label {
+                        font-size: 15px;
+                    }
+                }
+                /* Mobile styles */
+                @media (max-width: 767px) {
                     .form-container {
                         max-width: 100%;
                         padding: 0 5px;
                     }
                     .swal2-popup {
-                        padding: 0.6em !important;
+                        padding: 0.8em !important;
                         width: 90% !important;
                         max-width: 350px !important;
                     }
@@ -203,8 +223,6 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
         cancelButtonText: 'Annuler',
         confirmButtonColor: '#10B981',
         cancelButtonColor: '#EF4444',
-        width: 'auto',
-        padding: '1em',
         backdrop: true,
         allowOutsideClick: () => !Swal.isLoading()
     });
@@ -238,13 +256,15 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
         );
         window.open(`https://wa.me/${settings.phone}?text=${message}`, '_blank');
         
+        // Utiliser des styles adaptés à la taille de l'écran
+        const isMobile = window.innerWidth < 768;
         Swal.fire({
             icon: 'success',
             title: 'Réservation initiée !',
             text: 'Votre demande a été envoyée via WhatsApp.',
             confirmButtonColor: '#10B981',
-            width: 'auto',
-            padding: '1em'
+            width: isMobile ? 'auto' : '450px',
+            padding: isMobile ? '1em' : '1.5em'
         });
     } catch (error) {
         console.error('Error creating reservation:', error);
@@ -253,8 +273,8 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
             title: 'Erreur',
             text: 'Une erreur est survenue lors de la réservation.',
             confirmButtonColor: '#EF4444',
-            width: 'auto',
-            padding: '1em'
+            width: window.innerWidth < 768 ? 'auto' : '450px',
+            padding: window.innerWidth < 768 ? '1em' : '1.5em'
         });
     }
 };
@@ -1000,156 +1020,184 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
         );
       };
 
-const Features = () => {
-    // Feature data with added emoji alternatives for better visual appeal
-    const featureData = [
-      {
-        icon: <Car className="w-6 h-6 sm:w-8 sm:h-8" />,
-        emoji: "🚗",
-        title: "Livraison Gratuite",
-        content: "Livraison et récupération à l'adresse de votre choix",
-        color: "from-red-500 to-orange-500"
-      },
-      {
-        icon: <Shield className="w-6 h-6 sm:w-8 sm:h-8" />,
-        emoji: "🛡️",
-        title: "Assurance Premium",
-        content: "Couverture tous risques incluse dans chaque location",
-        color: "from-blue-400 to-cyan-500"
-      },
-      {
-        icon: <PhoneCall className="w-6 h-6 sm:w-8 sm:h-8" />,
-        emoji: "📱",
-        title: "Service 24/7",
-        content: "Une équipe à votre disposition à tout moment",
-        color: "from-yellow-400 to-amber-500"
-      },
-      {
-        icon: <Settings className="w-6 h-6 sm:w-8 sm:h-8" />,
-        emoji: "⚙️",
-        title: "Entretien Inclus",
-        content: "Tous nos véhicules sont parfaitement entretenus",
-        color: "from-green-400 to-emerald-500"
-      },
-      {
-        icon: <CreditCard className="w-6 h-6 sm:w-8 sm:h-8" />,
-        emoji: "💳",
-        title: "Paiement Flexible",
-        content: "Options de paiement adaptées à vos besoins",
-        color: "from-purple-400 to-indigo-500"
-      },
-      {
-        icon: <Clock className="w-6 h-6 sm:w-8 sm:h-8" />,
-        emoji: "⏱️",
-        title: "Réservation Rapide",
-        content: "Processus de réservation simplifié et rapide",
-        color: "from-pink-400 to-rose-500"
-      }
-    ];
-  
-    // Animation variants for staggered appearance
-    const containerVariants = {
-      hidden: { opacity: 0 },
-      visible: {
-        opacity: 1,
-        transition: {
-          staggerChildren: 0.1
-        }
-      }
-    };
-  
-    const itemVariants = {
-      hidden: { y: 20, opacity: 0 },
-      visible: {
-        y: 0,
-        opacity: 1,
-        transition: { duration: 0.5 }
-      }
-    };
-  
-    return (
-      <section id="features" className="py-12 sm:py-16 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-gray-900 dark:to-gray-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12 text-gray-900 dark:text-gray-100">
-            Nos Avantages Exclusifs
-          </h2>
-  
-          {/* Horizontal scrollable container for mobile */}
-          <div className="md:hidden overflow-x-auto pb-8 -mx-4 px-4 flex space-x-4 snap-x snap-mandatory scrollbar-hide">
-            {featureData.map((feature, index) => (
+      const Features = () => {
+        // Feature data with added emoji alternatives for better visual appeal
+        const featureData = [
+          {
+            icon: <Car className="w-6 h-6" />,
+            emoji: "🚗",
+            title: "Livraison Gratuite",
+            content: "Livraison et récupération à l'adresse de votre choix",
+            color: "from-red-500 to-orange-500"
+          },
+          {
+            icon: <Shield className="w-6 h-6" />,
+            emoji: "🛡️",
+            title: "Assurance Premium",
+            content: "Couverture tous risques incluse dans chaque location",
+            color: "from-blue-400 to-cyan-500"
+          },
+          {
+            icon: <PhoneCall className="w-6 h-6" />,
+            emoji: "📱",
+            title: "Service 24/7",
+            content: "Une équipe à votre disposition à tout moment",
+            color: "from-yellow-400 to-amber-500"
+          },
+          {
+            icon: <Settings className="w-6 h-6" />,
+            emoji: "⚙️",
+            title: "Entretien Inclus",
+            content: "Tous nos véhicules sont parfaitement entretenus",
+            color: "from-green-400 to-emerald-500"
+          },
+          {
+            icon: <CreditCard className="w-6 h-6" />,
+            emoji: "💳",
+            title: "Paiement Flexible",
+            content: "Options de paiement adaptées à vos besoins",
+            color: "from-purple-400 to-indigo-500"
+          },
+          {
+            icon: <Clock className="w-6 h-6" />,
+            emoji: "⏱️",
+            title: "Réservation Rapide",
+            content: "Processus de réservation simplifié et rapide",
+            color: "from-pink-400 to-rose-500"
+          }
+        ];
+      
+        // Animation variants for staggered appearance
+        const containerVariants = {
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.1
+            }
+          }
+        };
+      
+        const itemVariants = {
+          hidden: { y: 20, opacity: 0 },
+          visible: {
+            y: 0,
+            opacity: 1,
+            transition: { duration: 0.5, ease: "easeOut" }
+          }
+        };
+      
+        return (
+          <section id="features" className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-gray-900 dark:to-gray-950">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div
-                key={index}
-                whileHover={{ y: -5 }}
-                className="snap-center flex-shrink-0 w-80 p-6 rounded-3xl bg-white dark:bg-gray-900 shadow-xl dark:shadow-2xl border border-gray-100 dark:border-gray-800 hover:dark:shadow-gray-800/50 transition-all"
+                initial={{ opacity: 0, y: -10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+                className="text-center mb-12"
               >
-                <div className={`mb-4 inline-flex bg-gradient-to-r ${feature.color} p-3 rounded-2xl`}>
-                  <div className="text-white">
-                    {feature.icon}
-                  </div>
-                </div>
-                <h3 className="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                  {feature.content}
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-4 text-gray-900 dark:text-gray-100">
+                  Nos Avantages Exclusifs
+                </h2>
+                <p className="max-w-2xl mx-auto text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+                  Découvrez pourquoi notre service de location est le meilleur choix pour votre prochain voyage
                 </p>
               </motion.div>
-            ))}
-          </div>
-  
-          {/* Grid layout for tablets and desktop */}
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
-          >
-            {featureData.map((feature, index) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                whileHover={{ y: -5 }}
-                className="group p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 shadow-xl dark:shadow-2xl border border-gray-100 dark:border-gray-800 hover:dark:shadow-gray-800/50 transition-all"
-              >
-                <div className={`mb-4 sm:mb-6 inline-flex bg-gradient-to-r ${feature.color} p-3 sm:p-4 rounded-2xl`}>
-                  <div className="text-white">
-                    {feature.icon}
-                  </div>
+      
+              {/* Mobile view (carousel style) */}
+              <div className="lg:hidden relative">
+                <div className="overflow-x-auto pb-8 -mx-4 px-4 flex space-x-4 snap-x snap-mandatory scrollbar-hide">
+                  {featureData.map((feature, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.05 }}
+                      viewport={{ once: true }}
+                      whileHover={{ y: -5, scale: 1.03 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="snap-center flex-shrink-0 w-72 sm:w-80 p-5 sm:p-6 rounded-3xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl dark:shadow-gray-900/30 dark:hover:shadow-gray-800/40 border border-gray-100 dark:border-gray-700 transition-all duration-300"
+                    >
+                      <div className={`mb-4 inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-r ${feature.color}`}>
+                        <div className="text-white">
+                          {feature.icon}
+                        </div>
+                      </div>
+                      <h3 className="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">
+                        {feature.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        {feature.content}
+                      </p>
+                    </motion.div>
+                  ))}
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-gray-800 dark:text-gray-200">
-                  {feature.title}
-                </h3>
-                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-                  {feature.content}
-                </p>
+      
+                {/* Improved scroll indicator */}
+                <div className="flex justify-center space-x-2 mt-6">
+                  {featureData.map((_, index) => (
+                    <button
+                      key={index}
+                      className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-700 focus:outline-none transition-all duration-300 focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                      aria-label={`Go to slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+      
+              {/* Desktop & tablet grid layout */}
+              <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-50px" }}
+                className="hidden lg:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+              >
+                {featureData.map((feature, index) => (
+                  <motion.div
+                    key={index}
+                    variants={itemVariants}
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="group p-6 rounded-3xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl dark:shadow-gray-900/30 dark:hover:shadow-gray-800/40 border border-gray-100 dark:border-gray-700 transition-all duration-300"
+                  >
+                    <div className={`mb-5 inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-r ${feature.color}`}>
+                      <div className="text-white">
+                        {feature.icon}
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold mb-3 text-gray-800 dark:text-gray-200 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors duration-300">
+                      {feature.title}
+                    </h3>
+                    <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                      {feature.content}
+                    </p>
+                  </motion.div>
+                ))}
               </motion.div>
-            ))}
-          </motion.div>
-  
-          {/* Indicator dots for mobile scroll */}
-          <div className="flex justify-center space-x-2 mt-6 md:hidden">
-            {featureData.map((_, index) => (
-              <button
-                key={index}
-                className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-700 focus:outline-none"
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-  
-          {/* Mobile CTA */}
-          <div className="mt-8 text-center md:hidden">
-            <a href="#fleet" className="inline-block px-6 py-3 bg-gradient-to-r from-yellow-400 to-amber-500 text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all">
-              Découvrir nos véhicules
-            </a>
-          </div>
-        </div>
-      </section>
-    );
-  };
+      
+              {/* CTA button */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                viewport={{ once: true }}
+                className="mt-12 text-center"
+              >
+                <a 
+                  href="#fleet" 
+                  className="inline-block px-6 py-3 bg-gradient-to-r from-yellow-400 to-amber-500 text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95"
+                >
+                  Découvrir nos véhicules
+                </a>
+              </motion.div>
+            </div>
+          </section>
+        );
+      };
 
-    const Testimonials = () => {
+      const Testimonials = () => {
         const { testimonials = [], addTestimonial, settings } = useData();
         const [isSubmitting, setIsSubmitting] = useState(false);
         const [currentPage, setCurrentPage] = useState(1);
@@ -1193,12 +1241,117 @@ const Features = () => {
         const handleAddTestimonial = async () => {
             const { value: formValues } = await Swal.fire({
                 title: 'Ajouter un témoignage',
-                html:
-                    '<input id="swal-name" class="swal2-input" placeholder="Votre nom" required>' +
-                    '<input id="swal-role" class="swal2-input" placeholder="Votre rôle (ex: Client)" required>' +
-                    '<textarea id="swal-content" class="swal2-textarea" placeholder="Votre témoignage" required></textarea>' +
-                    '<input id="swal-rating" type="number" min="1" max="5" class="swal2-input" placeholder="Note (1-5)" required>',
+                html: `
+                    <style>
+                        .form-container {
+                            width: 100%;
+                            margin: 0 auto;
+                            padding: 0;
+                        }
+                        .form-group {
+                            margin-bottom: 16px;
+                        }
+                        .swal2-input, .swal2-textarea, .swal2-select {
+                            width: 100% !important;
+                            margin: 0 !important;
+                            padding: 8px 12px !important;
+                            font-size: 15px !important;
+                            border-radius: 8px !important;
+                            border: 1px solid #ddd !important;
+                            box-shadow: none !important;
+                            box-sizing: border-box !important;
+                        }
+                        .swal2-input {
+                            height: 40px;
+                        }
+                        .swal2-textarea {
+                            min-height: 90px;
+                            resize: vertical;
+                        }
+                        .input-label {
+                            display: block;
+                            margin-bottom: 5px;
+                            font-size: 14px;
+                            font-weight: 500;
+                            color: #555;
+                        }
+                        input[type="number"] {
+                            -moz-appearance: textfield;
+                        }
+                        input[type="number"]::-webkit-outer-spin-button,
+                        input[type="number"]::-webkit-inner-spin-button {
+                            -webkit-appearance: none;
+                            margin: 0;
+                        }
+                        /* Desktop styles */
+                        @media (min-width: 768px) {
+                            .form-container {
+                                max-width: 450px;
+                                padding: 0 10px;
+                            }
+                            .swal2-popup {
+                                width: auto !important;
+                                min-width: 500px !important;
+                                padding: 1.5em !important;
+                            }
+                            .swal2-title {
+                                font-size: 24px !important;
+                            }
+                            .swal2-input, .swal2-textarea, .swal2-select {
+                                font-size: 16px !important;
+                            }
+                            .input-label {
+                                font-size: 15px;
+                            }
+                            .swal2-textarea {
+                                min-height: 120px;
+                            }
+                        }
+                        /* Mobile styles */
+                        @media (max-width: 767px) {
+                            .form-container {
+                                max-width: 100%;
+                                padding: 0 5px;
+                            }
+                            .swal2-popup {
+                                padding: 0.8em !important;
+                                width: 90% !important;
+                                max-width: 350px !important;
+                            }
+                            .swal2-title {
+                                font-size: 18px !important;
+                                padding: 10px 0 !important;
+                            }
+                            .swal2-actions {
+                                margin-top: 10px !important;
+                            }
+                        }
+                    </style>
+                    <div class="form-container">
+                        <div class="form-group">
+                            <input id="swal-name" class="swal2-input" placeholder="Votre nom" required>
+                        </div>
+                        <div class="form-group">
+                            <input id="swal-role" class="swal2-input" placeholder="Votre rôle (ex: Client)" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label" for="swal-content">Votre témoignage:</label>
+                            <textarea id="swal-content" class="swal2-textarea" placeholder="Partagez votre expérience..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label" for="swal-rating">Note (1-5):</label>
+                            <input id="swal-rating" type="number" min="1" max="5" class="swal2-input" placeholder="5" required>
+                        </div>
+                    </div>
+                `,
                 focusConfirm: false,
+                customClass: {
+                    container: 'custom-swal-container',
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    confirmButton: 'custom-swal-confirm',
+                    cancelButton: 'custom-swal-cancel'
+                },
                 preConfirm: () => {
                     const name = document.getElementById('swal-name').value;
                     const role = document.getElementById('swal-role').value;
@@ -1215,26 +1368,35 @@ const Features = () => {
                 cancelButtonText: 'Annuler',
                 confirmButtonColor: '#10B981',
                 cancelButtonColor: '#EF4444',
+                backdrop: true,
+                allowOutsideClick: () => !Swal.isLoading()
             });
-    
+        
             if (!formValues) return;
-    
+        
             setIsSubmitting(true);
             try {
                 await addTestimonial(formValues);
+                
+                // Utiliser des styles adaptés à la taille de l'écran
+                const isMobile = window.innerWidth < 768;
                 Swal.fire({
                     icon: 'success',
                     title: 'Témoignage ajouté !',
                     text: 'Merci pour votre contribution.',
                     confirmButtonColor: '#10B981',
+                    width: isMobile ? 'auto' : '450px',
+                    padding: isMobile ? '1em' : '1.5em'
                 });
             } catch (error) {
                 console.error('Error adding testimonial:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Erreur',
-                    text: 'Une erreur est survenue lors de l ajout du témoignage.',
-                    confirmButtonColor : '#EF4444',
+                    text: 'Une erreur est survenue lors de l\'ajout du témoignage.',
+                    confirmButtonColor: '#EF4444',
+                    width: window.innerWidth < 768 ? 'auto' : '450px',
+                    padding: window.innerWidth < 768 ? '1em' : '1.5em'
                 });
             } finally {
                 setIsSubmitting(false);
