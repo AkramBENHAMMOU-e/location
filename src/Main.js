@@ -88,59 +88,88 @@ const handleLogoClick = () => {
 
 
 const handleWhatsAppReservation = async (carName, carId, addCustomer, addReservation) => {
-    // Obtenir la date d'aujourd'hui au format YYYY-MM-DD
     const today = new Date().toISOString().split('T')[0];
-    // Obtenir la date de demain au format YYYY-MM-DD
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
     const { value: formValues } = await Swal.fire({
         title: 'Réservez votre voiture',
-        html:
-            '<div class="form-container" style="width: 100%; max-width: 350px; margin:0 auto;">'+
-        '<div class="form-group" style="margin-bottom: 15px;">'+
-          '<input id="swal-input1" class="swal2-input" placeholder="Votre nom" required style="width: 100%; box-sizing: border-box;">'+
-        '</div>'+
-        '<div class="form-group" style="margin-bottom: 15px; display: flex; flex-direction: column;">'+
-          '<input id="swal-input2" class="swal2-input" placeholder="Votre téléphone" required style="width: 100%; box-sizing: border-box;">'+
-       '</div>'+
-        
-        '<div class="form-group" style="margin-bottom: 15px; display: flex; flex-direction: column;">'+
-          '<label for="start-date" style="margin-bottom: 5px; font-weight: bold;">Date de début:</label>'+
-          '<input id="start-date" type="date" class="swal2-input" value="${today}" min="${today}" required style="width: 100%; box-sizing: border-box;">'+
-        '</div>'+
-        
-       ' <div class="form-group" style="margin-bottom: 15px; display: flex; flex-direction: column;">'+
-          '<label for="end-date" style="margin-bottom: 5px; font-weight: bold;">Date de fin:</label>'+
-          '<input id="end-date" type="date" class="swal2-input" value="${tomorrow}" min="${tomorrow}" required style="width: 100%; box-sizing: border-box;">'+
-        '</div>'+
-      '</div>',
+        html: `
+            <style>
+                /* Styles pour rendre le formulaire responsive */
+                .form-container {
+                    width: 100%;
+                    max-width: 400px;
+                    margin: 0 auto;
+                    padding: 10px;
+                    box-sizing: border-box;
+                }
+                .form-group {
+                    margin-bottom: 1rem;
+                    display: flex;
+                    flex-direction: column;
+                    width: 100%;
+                }
+                .swal2-input, .swal2-textarea {
+                    width: 100%;
+                    padding: 0.75rem;
+                    font-size: 1rem; /* Minimum 16px sur la plupart des écrans */
+                    box-sizing: border-box;
+                }
+                label {
+                    font-weight: bold;
+                    margin-bottom: 0.5rem;
+                    font-size: 1rem;
+                }
+                /* Media query pour téléphones */
+                @media (max-width: 600px) {
+                    .form-container {
+                        padding: 5px;
+                    }
+                    .swal2-input, .swal2-textarea {
+                        font-size: 0.9rem; /* Légère réduction pour petits écrans */
+                        padding: 0.5rem;
+                    }
+                    .swal2-title {
+                        font-size: 1.2rem;
+                    }
+                }
+            </style>
+            <div class="form-container">
+                <div class="form-group">
+                    <input id="swal-input1" class="swal2-input" placeholder="Votre nom" required>
+                </div>
+                <div class="form-group">
+                    <input id="swal-input2" class="swal2-input" placeholder="Votre téléphone" required>
+                </div>
+                <div class="form-group">
+                    <label for="start-date">Date de début :</label>
+                    <input id="start-date" type="date" class="swal2-input" value="${today}" min="${today}" required>
+                </div>
+                <div class="form-group">
+                    <label for="end-date">Date de fin :</label>
+                    <input id="end-date" type="date" class="swal2-input" value="${tomorrow}" min="${tomorrow}" required>
+                </div>
+            </div>
+        `,
         focusConfirm: false,
         preConfirm: () => {
             const customerName = document.getElementById('swal-input1').value;
             const customerPhone = document.getElementById('swal-input2').value;
             const startDate = document.getElementById('start-date').value;
             const endDate = document.getElementById('end-date').value;
-            
-            // Validation des champs
-            if (!customerName || !customerPhone) {
+
+            if (!customerName || !customerPhone || !startDate || !endDate) {
                 Swal.showValidationMessage('Veuillez remplir tous les champs');
                 return false;
             }
-            
-            // Validation des dates
-            if (!startDate || !endDate) {
-                Swal.showValidationMessage('Veuillez sélectionner les dates de réservation');
-                return false;
-            }
-            
+
             const start = new Date(startDate);
             const end = new Date(endDate);
-            
             if (start > end) {
                 Swal.showValidationMessage('La date de fin doit être après la date de début');
                 return false;
             }
-            
+
             return { customerName, customerPhone, startDate, endDate };
         },
         showCancelButton: true,
@@ -148,6 +177,22 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
         cancelButtonText: 'Annuler',
         confirmButtonColor: '#10B981',
         cancelButtonColor: '#EF4444',
+        /* Ajout de styles pour les boutons responsives */
+        customClass: {
+            confirmButton: 'swal2-confirm-button',
+            cancelButton: 'swal2-cancel-button',
+        },
+        didOpen: () => {
+            // Ajouter des styles dynamiques aux boutons via JS
+            const confirmButton = document.querySelector('.swal2-confirm-button');
+            const cancelButton = document.querySelector('.swal2-cancel-button');
+            confirmButton.style.padding = '12px 24px';
+            confirmButton.style.fontSize = '1rem';
+            confirmButton.style.minWidth = '100px';
+            cancelButton.style.padding = '12px 24px';
+            cancelButton.style.fontSize = '1rem';
+            cancelButton.style.minWidth = '100px';
+        },
     });
 
     if (!formValues) return;
@@ -164,7 +209,6 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
             status: 'pending',
         });
 
-        // Calculer la durée de réservation en jours
         const start = new Date(startDate);
         const end = new Date(endDate);
         const durationDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
@@ -178,7 +222,7 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
             `⏱️ Durée: ${durationDays} jour${durationDays > 1 ? 's' : ''}`
         );
         window.open(`https://wa.me/${settings.phone}?text=${message}`, '_blank');
-        
+
         Swal.fire({
             icon: 'success',
             title: 'Réservation initiée !',
