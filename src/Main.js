@@ -1764,6 +1764,7 @@ const handleWhatsAppReservation = async (carName, carId, addCustomer, addReserva
                     {/* Copyright Section */}
                     <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
                         © {new Date().getFullYear()} {settings.siteName}. Tous droits réservés.
+                        <a href='https://www.linkedin.com/in/akram-benhammou-a888a9221/' className="text-black"> Akram Benhammou</a>
                     </div>
                 </div>
             </footer>
