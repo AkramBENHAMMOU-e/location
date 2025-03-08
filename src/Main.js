@@ -24,8 +24,8 @@ import {
   Bold,
 } from 'lucide-react';
 import Swal from 'sweetalert2';
- import Logo from './assets/logo11-removebg-preview.png';
-/*import Logo from './assets/ghani_car.jpg';*/
+ //import Logo from './assets/logo11-removebg-preview.png';
+import Logo from './assets/YlhCar.png';
 import DaciaLogo from './assets/daciaLogo.png';
 import Dacia from './assets/dacia-removebg-preview.png';
 import VolswagenLogo from './assets/volswagenLogo-removebg-preview.png';
