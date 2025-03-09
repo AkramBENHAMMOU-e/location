@@ -1423,39 +1423,39 @@ const Features = memo(() => {
                         </p>
                     </div>
     
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-10">
-                        <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 p-2 rounded-full shadow-sm">
-                            <span className="pl-3 text-sm font-medium text-gray-700 dark:text-gray-300">Filtrer :</span>
-                            <div className="flex space-x-1">
-                                {[0, 5, 4, 3, 2, 1].map((rating) => (
-                                    <button
-                                        key={rating}
-                                        onClick={() => { 
-                                            setFilteredRating(rating); 
-                                            setCurrentPage(1); 
-                                        }}
-                                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                                            filteredRating === rating
-                                                ? 'bg-[#0061ff] text-white shadow-md'
-                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                        }`}
-                                    >
-                                        {rating === 0 ? 'Tous' : `${rating} ★`}
-                                    </button>
-                                ))}
-                            </div>
+                    <div className="hidden sm:flex flex-col sm:flex-row justify-between items-center gap-4 mb-10">
+                    <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 p-2 rounded-full shadow-sm">
+                        <span className="pl-3 text-sm font-medium text-gray-700 dark:text-gray-300">Filtrer :</span>
+                        <div className="flex space-x-1">
+                            {[0, 5, 4, 3, 2, 1].map((rating) => (
+                                <button
+                                    key={rating}
+                                    onClick={() => { 
+                                        setFilteredRating(rating); 
+                                        setCurrentPage(1); 
+                                    }}
+                                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                                        filteredRating === rating
+                                            ? 'bg-[#0061ff] text-white shadow-md'
+                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    }`}
+                                >
+                                    {rating === 0 ? 'Tous' : `${rating} ★`}
+                                </button>
+                            ))}
                         </div>
-                        <motion.button
-                            onClick={handleAddTestimonial}
-                            disabled={isSubmitting}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            className={`px-5 py-3 rounded-full text-white font-medium flex items-center space-x-2 shadow-md transition-all ${
-                                isSubmitting 
-                                    ? 'bg-gray-400 cursor-not-allowed' 
-                                    : 'bg-gradient-to-r from-[#312783] to-[#0061ff]  hover:shadow-lg'
-                            }`}
-                        >
+                    </div>
+                    <motion.button
+                        onClick={handleAddTestimonial}
+                        disabled={isSubmitting}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        className={`px-5 py-3 rounded-full text-white font-medium flex items-center space-x-2 shadow-md transition-all ${
+                            isSubmitting 
+                                ? 'bg-gray-400 cursor-not-allowed' 
+                                : 'bg-gradient-to-r from-[#312783] to-[#0061ff]  hover:shadow-lg'
+                        }`}
+                    >
                             {isSubmitting ? (
                                 <>
                                     <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>
@@ -1469,6 +1469,30 @@ const Features = memo(() => {
                             )}
                         </motion.button>
                     </div>
+
+                    <div className="sm:hidden mb-10 text-center">
+                    <motion.button
+                        onClick={handleAddTestimonial}
+                        disabled={isSubmitting}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        className={`px-5 py-3 rounded-full text-white font-medium flex items-center space-x-2 shadow-md transition-all mx-auto ${
+                            isSubmitting 
+                                ? 'bg-gray-400 cursor-not-allowed' 
+                                : 'bg-gradient-to-r from-[#312783] to-[#0061ff]  hover:shadow-lg'
+                        }`}
+                    >{isSubmitting ? (
+                        <>
+                            <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>
+                            <span>Envoi en cours...</span>
+                        </>
+                    ) : (
+                        <>
+                            <MessageCircle className="w-4 h-4" />
+                            <span>Ajouter un témoignage</span>
+                        </>
+                    )}</motion.button>
+                    </div> 
     
                     {filteredTestimonials.length > 0 ? (
                         <>
