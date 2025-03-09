@@ -1,21 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { useData } from './context/DataContext';
 
 const PrivateRoute = ({ element }) => {
-    const [isAuthorized, setIsAuthorized] = useState(false);
-    const [hasPrompted, setHasPrompted] = useState(false);
-
-    const correctPassword = 'admin123'; // Hardcoded password (simple option)
-
-    if (!hasPrompted) {
-        const password = prompt('Enter the admin password:');
-        if (password === correctPassword) {
-            setIsAuthorized(true);
-        }
-        setHasPrompted(true);
-    }
-
-    return isAuthorized ? element : <Navigate to="/" replace />;
+  const { admin } = useData();
+  return admin ? element : <Navigate to="/login" />;
 };
 
 export default PrivateRoute;

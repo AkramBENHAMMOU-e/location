@@ -18,18 +18,55 @@ export function DataProvider({ children }) {
     maintenanceMode: false,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [admin, setAdmin] = useState(() => {
+    const storedAdmin = localStorage.getItem('admin');
+    return storedAdmin ? JSON.parse(storedAdmin) : null; // Restaurer l'état de l'admin
+  });
 
   const API_BASE_URL = 'https://backend-iota-peach.vercel.app/api';
 
+  const login = async (username, password) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Échec de la connexion : ${errorText}`);
+      }
+      const { admin } = await response.json();
+      setAdmin(admin);
+      localStorage.setItem('admin', JSON.stringify(admin)); // Stocker localement
+      await fetchData(); // Charger les données après connexion
+    } catch (error) {
+      console.error('Erreur lors de la connexion :', error);
+      throw error;
+    }
+  };
+
+  const logout = () => {
+    setAdmin(null);
+    localStorage.removeItem('admin');
+    setCars([]);
+    setReservations([]);
+    setCustomers([]);
+    setTestimonials([]);
+    setSettings({ ...settings }); // Conserver les paramètres par défaut
+  };
+
   const fetchData = async () => {
+    if (!admin) return; // Ne pas charger les données si non authentifié
     setIsLoading(true);
     try {
+      const headers = { 'x-admin-id': admin.id };
       const [carsRes, reservationsRes, customersRes, testimonialsRes, settingsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/cars`),
-        fetch(`${API_BASE_URL}/reservations`),
-        fetch(`${API_BASE_URL}/customers`),
-        fetch(`${API_BASE_URL}/testimonials`),
-        fetch(`${API_BASE_URL}/settings`),
+        fetch(`${API_BASE_URL}/cars`, { headers }),
+        fetch(`${API_BASE_URL}/reservations`, { headers }),
+        fetch(`${API_BASE_URL}/customers`, { headers }),
+        fetch(`${API_BASE_URL}/testimonials`, { headers }),
+        fetch(`${API_BASE_URL}/settings`, { headers }),
       ]);
 
       if (!carsRes.ok || !reservationsRes.ok || !customersRes.ok || !testimonialsRes.ok || !settingsRes.ok) {
@@ -58,15 +95,18 @@ export function DataProvider({ children }) {
       });
     } catch (error) {
       console.error('Erreur lors du chargement des données :', error);
+      logout(); // Déconnexion si l'authentification échoue
     } finally {
       setIsLoading(false);
     }
   };
 
   const addCar = async (formData) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/cars`, {
         method: 'POST',
+        headers: { 'x-admin-id': admin.id },
         body: formData,
       });
       if (!response.ok) {
@@ -83,9 +123,11 @@ export function DataProvider({ children }) {
   };
 
   const updateCar = async (id, formData) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/cars/${id}`, {
         method: 'PUT',
+        headers: { 'x-admin-id': admin.id },
         body: formData,
       });
       if (!response.ok) {
@@ -102,9 +144,11 @@ export function DataProvider({ children }) {
   };
 
   const deleteCar = async (id) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/cars/${id}`, {
         method: 'DELETE',
+        headers: { 'x-admin-id': admin.id },
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -118,10 +162,11 @@ export function DataProvider({ children }) {
   };
 
   const addCustomer = async (customerData) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/customers`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-id': admin.id },
         body: JSON.stringify(customerData),
       });
       if (!response.ok) {
@@ -138,10 +183,11 @@ export function DataProvider({ children }) {
   };
 
   const updateCustomer = async (id, customerData) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/customers/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-id': admin.id },
         body: JSON.stringify(customerData),
       });
       if (!response.ok) {
@@ -158,9 +204,11 @@ export function DataProvider({ children }) {
   };
 
   const deleteCustomer = async (id) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/customers/${id}`, {
         method: 'DELETE',
+        headers: { 'x-admin-id': admin.id },
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -174,10 +222,11 @@ export function DataProvider({ children }) {
   };
 
   const addReservation = async (reservationData) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/reservations`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-id': admin.id },
         body: JSON.stringify(reservationData),
       });
       if (!response.ok) {
@@ -186,7 +235,7 @@ export function DataProvider({ children }) {
       }
       const addedReservation = await response.json();
       setReservations((prevReservations) => [...prevReservations, addedReservation]);
-      await fetchData(); // Rafraîchir toutes les données pour synchroniser
+      await fetchData();
       return addedReservation;
     } catch (error) {
       console.error('Erreur dans addReservation :', error);
@@ -195,10 +244,11 @@ export function DataProvider({ children }) {
   };
 
   const updateReservation = async (id, reservationData) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/reservations/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-id': admin.id },
         body: JSON.stringify(reservationData),
       });
       if (!response.ok) {
@@ -207,7 +257,7 @@ export function DataProvider({ children }) {
       }
       const updatedReservation = await response.json();
       setReservations((prevReservations) => prevReservations.map((res) => (res.id === id ? updatedReservation : res)));
-      await fetchData(); // Rafraîchir toutes les données
+      await fetchData();
       return updatedReservation;
     } catch (error) {
       console.error('Erreur dans updateReservation :', error);
@@ -216,16 +266,18 @@ export function DataProvider({ children }) {
   };
 
   const deleteReservation = async (id) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/reservations/${id}`, {
         method: 'DELETE',
+        headers: { 'x-admin-id': admin.id },
       });
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Échec de la suppression de la réservation : ${errorText}`);
       }
       setReservations((prevReservations) => prevReservations.filter((res) => res.id !== id));
-      await fetchData(); // Rafraîchir toutes les données
+      await fetchData();
     } catch (error) {
       console.error('Erreur dans deleteReservation :', error);
       throw error;
@@ -233,10 +285,11 @@ export function DataProvider({ children }) {
   };
 
   const updateSettings = async (settingsData) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/settings`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-id': admin.id },
         body: JSON.stringify(settingsData),
       });
       if (!response.ok) {
@@ -262,10 +315,11 @@ export function DataProvider({ children }) {
   };
 
   const addTestimonial = async (testimonialData) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/testimonials`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-id': admin.id },
         body: JSON.stringify(testimonialData),
       });
       if (!response.ok) {
@@ -274,7 +328,7 @@ export function DataProvider({ children }) {
       }
       const addedTestimonial = await response.json();
       setTestimonials((prevTestimonials) => [...prevTestimonials, addedTestimonial]);
-      await fetchData(); // Rafraîchir toutes les données
+      await fetchData();
       return addedTestimonial;
     } catch (error) {
       console.error('Erreur dans addTestimonial :', error);
@@ -283,10 +337,11 @@ export function DataProvider({ children }) {
   };
 
   const updateTestimonial = async (id, testimonialData) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/testimonials/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-id': admin.id },
         body: JSON.stringify(testimonialData),
       });
       if (!response.ok) {
@@ -303,9 +358,11 @@ export function DataProvider({ children }) {
   };
 
   const deleteTestimonial = async (id) => {
+    if (!admin) throw new Error('Authentification requise');
     try {
       const response = await fetch(`${API_BASE_URL}/testimonials/${id}`, {
         method: 'DELETE',
+        headers: { 'x-admin-id': admin.id },
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -319,8 +376,10 @@ export function DataProvider({ children }) {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (admin) {
+      fetchData(); // Charger les données uniquement si authentifié
+    }
+  }, [admin]);
 
   return (
     <DataContext.Provider
@@ -331,6 +390,9 @@ export function DataProvider({ children }) {
         testimonials,
         settings,
         isLoading,
+        admin, // Exposer l'état de l'admin
+        login,
+        logout,
         addCar,
         updateCar,
         deleteCar,
