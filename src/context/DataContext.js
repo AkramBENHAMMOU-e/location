@@ -8,13 +8,13 @@ export function DataProvider({ children }) {
   const [customers, setCustomers] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
   const [settings, setSettings] = useState({
-    siteName: 'Luxury Drive',
-    phone: '212xxxxxx',
-    contactEmail: 'admin@luxurydrive.com',
-    instagram: 'instagram.com',
-    facebook: 'facebook.com',
-    adress: 'adress',
-    gps: 'gps',
+    siteName: 'YLH CAR',
+    phone: '212661918917',
+    contactEmail: 'reservation@ylhcar.ma',
+    instagram: 'https://instagram.com/ylhcarofficiel',
+    facebook: 'https://www.facebook.com/YLHCAR',
+    adress: 'Bouchouk résidence annakhil 2, Salé',
+    gps: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3304.566074414049!2d-6.785799300000001!3d34.0806362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda769b090183891%3A0x39e21bb9b22eafd5!2sYLH%20CAR!5e0!3m2!1sfr!2sma!4v1741453156087!5m2!1sfr!2sma',
     maintenanceMode: false,
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -47,13 +47,13 @@ export function DataProvider({ children }) {
       setCustomers(customersData);
       setTestimonials(testimonialsData);
       setSettings({
-        siteName: settingsData.site_name || 'Luxury Drive',
-        phone: settingsData.phone || '212xxxxxx',
-        contactEmail: settingsData.contact_email || 'admin@luxurydrive.com',
-        instagram: settingsData.instagram || 'instagram.com',
-        facebook: settingsData.facebook || 'facebook.com',
-        adress: settingsData.adress || 'adress',
-        gps: settingsData.gps || 'gps',
+        siteName: settingsData.site_name || 'YLH CAR',
+        phone: settingsData.phone || '212661918917',
+        contactEmail: settingsData.contact_email || 'reservation@ylhcar.ma',
+        instagram: settingsData.instagram || 'https://instagram.com/ylhcarofficiel',
+        facebook: settingsData.facebook || 'https://www.facebook.com/YLHCAR',
+        adress: settingsData.adress || 'Bouchouk résidence annakhil 2, Salé',
+        gps: settingsData.gps || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3304.566074414049!2d-6.785799300000001!3d34.0806362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda769b090183891%3A0x39e21bb9b22eafd5!2sYLH%20CAR!5e0!3m2!1sfr!2sma!4v1741453156087!5m2!1sfr!2sma',
         maintenanceMode: settingsData.maintenance_mode === 1,
       });
     } catch (error) {
@@ -245,13 +245,13 @@ export function DataProvider({ children }) {
       }
       const updatedSettings = await response.json();
       setSettings({
-        siteName: updatedSettings.site_name || 'Luxury Drive',
-        phone: updatedSettings.phone || '212xxxxxx',
-        contactEmail: updatedSettings.contact_email || 'admin@luxurydrive.com',
-        instagram: updatedSettings.instagram || 'instagram.com',
-        facebook: updatedSettings.facebook || 'facebook.com',
-        adress: updatedSettings.adress || 'adress',
-        gps: updatedSettings.gps || 'gps',
+        siteName: updatedSettings.site_name || 'YLH CAR',
+        phone: updatedSettings.phone || '212661918917',
+        contactEmail: updatedSettings.contact_email || 'reservation@ylhcar.ma',
+        instagram: updatedSettings.instagram || 'https://instagram.com/ylhcarofficiel',
+        facebook: updatedSettings.facebook || 'https://www.facebook.com/YLHCAR',
+        adress: updatedSettings.adress || 'Bouchouk résidence annakhil 2, Salé',
+        gps: updatedSettings.gps || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3304.566074414049!2d-6.785799300000001!3d34.0806362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda769b090183891%3A0x39e21bb9b22eafd5!2sYLH%20CAR!5e0!3m2!1sfr!2sma!4v1741453156087!5m2!1sfr!2sma',
         maintenanceMode: updatedSettings.maintenance_mode === 1,
       });
       return updatedSettings;
