@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo, useRef } from 'react';
 import "./App.css";
-import { Link } from 'react-router-dom';
+
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { FaFacebook, FaInstagram, FaWhatsapp, FaTimes, FaBars, FaChevronDown } from "react-icons/fa";
 import { 
@@ -1750,28 +1750,14 @@ const Features = memo(() => {
         const [clickCount, setClickCount] = useState(0);
         const { settings } = useData();
         const [openSection, setOpenSection] = useState(null);
-        const navigate = useNavigate(); // Ajouter useNavigate pour la redirection
-      
+    
         const handleClick = () => {
-            setClickCount((prevCount) => {
-              const newCount = prevCount + 1;
-              if (newCount === 5) {
-                navigate('/login');
-                return 0; // Réinitialiser le compteur à 0 après redirection
-              }
-              return newCount;
-            });
-          };
-      
-        const toggleSection = (section) => setOpenSection(openSection === section ? null : section);
-      
-        const handleLogoClick = () => {
-          // Si vous avez une logique spécifique pour le clic sur le logo, laissez-la ici
-          console.log('Logo cliqué');
+            setClickCount(prevCount => prevCount + 1);
         };
-      
+    
+        const toggleSection = (section) => setOpenSection(openSection === section ? null : section);
+    
         return (
-<<<<<<< HEAD
             <footer className="bg-gradient-to-r from-gray-900 to-black text-white py-12 md:py-16">
                 <div className="max-w-7xl mx-auto px-4 md:px-8">
                     {/* Top section with grid layout */}
@@ -1898,165 +1884,10 @@ const Features = memo(() => {
                             </a>
                         </p>
                     </div>
-=======
-          <footer className="bg-gradient-to-r from-gray-900 to-black text-white py-12 md:py-16">
-            <div className="max-w-7xl mx-auto px-4 md:px-8">
-              {/* Top section with grid layout */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
-                {/* Logo and tagline section */}
-                <div className="space-y-4 flex flex-col items-center md:items-start md:text-left text-center">
-                  <img
-                    src={Logo}
-                    alt={settings.siteName}
-                    className="h-14 w-auto mb-4 transition-transform hover:scale-105 duration-300 cursor-pointer"
-                    onClick={handleLogoClick}
-                  />
-                  <p className="text-sm text-gray-300 max-w-xs">Location de voitures avec un service d'exception</p>
->>>>>>> 93d4baa9c4b259f572e8cc55f02a3587e8155857
                 </div>
-      
-                {/* Navigation section */}
-                <div className="md:block">
-                  <div
-                    className="flex justify-between items-center border-b border-gray-700 pb-3 md:border-none md:pb-0 cursor-pointer group"
-                    onClick={() => toggleSection('navigation')}
-                  >
-                    <h4 className="font-bold text-lg text-[#6171fe]">Navigation</h4>
-                    <FaChevronDown
-                      className="md:hidden transform transition-transform duration-300 text-[#6171fe] group-hover:text-white"
-                      style={{ transform: openSection === 'navigation' ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                    />
-                  </div>
-                  <ul
-                    className={`${openSection === 'navigation' ? 'max-h-96 mt-4' : 'max-h-0'} md:mt-4 md:max-h-96 overflow-hidden transition-all duration-300 ease-in-out space-y-3 text-sm text-gray-300 md:block`}
-                  >
-                    <li>
-                      <a href="#fleet" className="hover:text-[#0061ff] transition-colors duration-200 inline-block py-1">
-                        Notre Flotte
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#features" className="hover:text-[#0061ff] transition-colors duration-200 inline-block py-1">
-                        Avantages
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#contact" className="hover:text-[#0061ff] transition-colors duration-200 inline-block py-1">
-                        Contact
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-      
-                {/* Legal section */}
-                <div className="md:block">
-                  <div
-                    className="flex justify-between items-center border-b border-gray-700 pb-3 md:border-none md:pb-0 cursor-pointer group"
-                    onClick={() => toggleSection('legal')}
-                  >
-                    <h4 className="font-bold text-lg text-[#6171fe]">Légal</h4>
-                    <FaChevronDown
-                      className="md:hidden transform transition-transform duration-300 text-[#6171fe] group-hover:text-white"
-                      style={{ transform: openSection === 'legal' ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                    />
-                  </div>
-                  <ul
-                    className={`${openSection === 'legal' ? 'max-h-96 mt-4' : 'max-h-0'} md:mt-4 md:max-h-96 overflow-hidden transition-all duration-300 ease-in-out space-y-3 text-sm text-gray-300 md:block`}
-                  >
-                    <li>
-                      <a
-                        href="/conditions-generales"
-                        rel="noopener noreferrer"
-                        className="hover:text-[#0061ff] transition-colors duration-200 inline-block py-1"
-                      >
-                        Conditions générales
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/politique-de-confidentialite"
-                        rel="noopener noreferrer"
-                        className="hover:text-[#0061ff] transition-colors duration-200 inline-block py-1"
-                      >
-                        Politique de confidentialité
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/mentions-legales"
-                        rel="noopener noreferrer"
-                        className="hover:text-[#0061ff] transition-colors duration-200 inline-block py-1"
-                      >
-                        Mentions légales
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-      
-                {/* Social media section */}
-                <div className="md:block">
-                  <div
-                    className="flex justify-between items-center border-b border-gray-700 pb-3 md:border-none md:pb-0 cursor-pointer group"
-                    onClick={() => toggleSection('social')}
-                  >
-                    <h4 className="font-bold text-lg text-[#6171fe]">Réseaux sociaux</h4>
-                    <FaChevronDown
-                      className="md:hidden transform transition-transform duration-300 text-[#6171fe] group-hover:text-white"
-                      style={{ transform: openSection === 'social' ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                    />
-                  </div>
-                  <div
-                    className={`${openSection === 'social' ? 'max-h-96 mt-4' : 'max-h-0'} md:mt-4 md:max-h-96 overflow-hidden transition-all duration-300 ease-in-out flex justify-center md:justify-start space-x-4`}
-                  >
-                    <a
-                      href={`https://wa.me/${settings.phone}`}
-                      className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center hover:bg-green-500/50 transition-all duration-300 transform hover:scale-110"
-                    >
-                      <FaWhatsapp className="w-5 h-5 text-green-400" />
-                    </a>
-                    <a
-                      href={`mailto:${settings.contactEmail}`}
-                      className="w-10 h-10 bg-gray-500/20 rounded-full flex items-center justify-center hover:bg-gray-500/50 transition-all duration-300 transform hover:scale-110"
-                    >
-                      <Mail className="w-5 h-5 text-gray-300" />
-                    </a>
-                    <a
-                      href={settings.facebook}
-                      className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center hover:bg-blue-500/50 transition-all duration-300 transform hover:scale-110"
-                    >
-                      <FaFacebook className="w-5 h-5 text-blue-300" />
-                    </a>
-                    <a
-                      href={settings.instagram}
-                      className="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center hover:from-purple-500/40 hover:to-pink-500/40 transition-all duration-300 transform hover:scale-110"
-                    >
-                      <FaInstagram className="w-5 h-5 text-pink-300" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-      
-              {/* Bottom copyright section */}
-              <div className="border-t border-gray-800 mt-10 pt-8 text-center">
-                <p className="text-sm text-gray-400">
-                  <span onClick={handleClick} style={{ cursor: 'pointer' }}>
-                    ©
-                  </span>{' '}
-                  {new Date().getFullYear()} {settings.siteName}. Tous droits réservés.
-                </p>
-                <p className="mt-2">
-                  <a
-                    href="https://www.linkedin.com/in/akram-benhammou-a888a9221/"
-                    className={`text-[#090d16] ${clickCount >= 5 ? 'text-gray-500' : ''}`}
-                  >
-                    Réalisé par Akram Benhammou
-                  </a>
-                </p>
-              </div>
-            </div>
-          </footer>
+            </footer>
         );
-      }, (prevProps, nextProps) => prevProps.settings === nextProps.settings && prevProps.handleLogoClick === nextProps.handleLogoClick);
+    }, (prevProps, nextProps) => prevProps.settings === nextProps.settings && prevProps.handleLogoClick === nextProps.handleLogoClick);
     const FloatingWhatsAppButton = memo(() => (
         <motion.a
             href={`https://wa.me/${settings.phone}`}

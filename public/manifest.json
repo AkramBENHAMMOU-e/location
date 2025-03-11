@@ -1,6 +1,6 @@
 {
-  "short_name": "YLH CAR",
-  "name": "YLH CAR || Location Voitures",
+  "short_name": "React App",
+  "name": "Create React App Sample",
   "icons": [
     {
       "src": "YlhCar.png",
