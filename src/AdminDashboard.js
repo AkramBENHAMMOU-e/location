@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Car, Users, Settings, PieChart, Plus, Edit, Trash, Search, MessageSquare, LogOut, Menu, Sun, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useData } from './context/DataContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
+
+
+    
 
 const AdminDashboard = () => {
+
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar state
     const [activeTab, setActiveTab] = useState('apercu');
     const [searchTerm, setSearchTerm] = useState('');
@@ -92,6 +96,16 @@ const AdminDashboard = () => {
     const handleSettingsSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
+        
+        // Vérification de la correspondance des mots de passe
+        const password = formData.get('password');
+        const confirmPassword = formData.get('confirmPassword');
+        
+        if (password && password !== confirmPassword) {
+            alert('Les mots de passe ne correspondent pas.');
+            return;
+        }
+        
         const updatedSettings = {
             site_name: formData.get('siteName'),
             phone: formData.get('phone'),
@@ -100,8 +114,10 @@ const AdminDashboard = () => {
             instagram: formData.get('instagram'),
             adress: formData.get('adress'),
             gps: formData.get('gps'),
+            password: password,
             maintenance_mode: formData.get('maintenanceMode') === 'on' ? 1 : 0,
         };
+        
         try {
             await updateSettings(updatedSettings);
             await refreshData();
@@ -204,6 +220,7 @@ const AdminDashboard = () => {
         await deleteReservation(id);
         setShowConfirmDelete(null);
     };
+
 
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
@@ -627,31 +644,39 @@ const AdminDashboard = () => {
                                     <form onSubmit={handleSettingsSubmit} className="space-y-4">
                                         <div>
                                             <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom du site</label>
-                                            <input name="siteName" type="text" defaultValue={settings.siteName || 'Luxury Drive'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                                            <input name="siteName" type="text" defaultValue={settings.siteName || 'YLH CAR'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
                                         </div>
                                         <div>
                                             <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Téléphone</label>
-                                            <input name="phone" type="number" defaultValue={settings.phone || '212xxxxxx'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                                            <input name="phone" type="number" defaultValue={settings.phone || '212661918917'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
                                         </div>
                                         <div>
                                             <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email de contact</label>
-                                            <input name="contactEmail" type="email" defaultValue={settings.contactEmail || 'admin@luxurydrive.com'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                                            <input name="contactEmail" type="email" defaultValue={settings.contactEmail || 'reservation@ylhcar.ma'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
                                         </div>
                                         <div>
                                             <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Facebook</label>
-                                            <input name="facebook" type="url" defaultValue={settings.facebook || 'facebook.com'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                                            <input name="facebook" type="url" defaultValue={settings.facebook || 'https://www.facebook.com/YLHCAR'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
                                         </div>
                                         <div>
                                             <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Instagram</label>
-                                            <input name="instagram" type="url" defaultValue={settings.instagram || 'instagram.com'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                                            <input name="instagram" type="url" defaultValue={settings.instagram || 'https://instagram.com/ylhcarofficiel'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
                                         </div>
                                         <div>
                                             <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Adresse</label>
-                                            <input name="adress" type="text" defaultValue={settings.adress || 'Adress'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                                            <input name="adress" type="text" defaultValue={settings.adress || 'Bouchouk résidence annakhil 2, Salé'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
                                         </div>
                                         <div>
                                             <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lien GPS</label>
-                                            <input name="gps" type="url" defaultValue={settings.gps || 'gps'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                                            <input name="gps" type="url" defaultValue={settings.gps || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3304.566074414049!2d-6.785799300000001!3d34.0806362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda769b090183891%3A0x39e21bb9b22eafd5!2sYLH%20CAR!5e0!3m2!1sfr!2sma!4v1741453156087!5m2!1sfr!2sma'} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nouveau mot de passe :</label>
+                                            <input name="password" type="password" defaultValue={settings.password ||''} className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirmer le nouveau mot de passe :</label>
+                                            <input name="confirmPassword" type="password" className="w-full px-2 py-1 md:px-3 md:py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" required />
                                         </div>
                                         <div className="flex items-center">
                                             <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 md:mr-4">Mode maintenance</label>

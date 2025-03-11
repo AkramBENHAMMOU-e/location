@@ -15,11 +15,12 @@ export function DataProvider({ children }) {
     facebook: 'https://www.facebook.com/YLHCAR',
     adress: 'Bouchouk résidence annakhil 2, Salé',
     gps: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3304.566074414049!2d-6.785799300000001!3d34.0806362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda769b090183891%3A0x39e21bb9b22eafd5!2sYLH%20CAR!5e0!3m2!1sfr!2sma!4v1741453156087!5m2!1sfr!2sma',
+    password: '',
     maintenanceMode: false,
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_BASE_URL = 'https://backend-iota-peach.vercel.app/api';
+  const API_BASE_URL = 'http://localhost:5000/api';
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -54,6 +55,7 @@ export function DataProvider({ children }) {
         facebook: settingsData.facebook || 'https://www.facebook.com/YLHCAR',
         adress: settingsData.adress || 'Bouchouk résidence annakhil 2, Salé',
         gps: settingsData.gps || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3304.566074414049!2d-6.785799300000001!3d34.0806362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda769b090183891%3A0x39e21bb9b22eafd5!2sYLH%20CAR!5e0!3m2!1sfr!2sma!4v1741453156087!5m2!1sfr!2sma',
+        password: settingsData.password || '',
         maintenanceMode: settingsData.maintenance_mode === 1,
       });
     } catch (error) {
@@ -252,6 +254,7 @@ export function DataProvider({ children }) {
         facebook: updatedSettings.facebook || 'https://www.facebook.com/YLHCAR',
         adress: updatedSettings.adress || 'Bouchouk résidence annakhil 2, Salé',
         gps: updatedSettings.gps || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3304.566074414049!2d-6.785799300000001!3d34.0806362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda769b090183891%3A0x39e21bb9b22eafd5!2sYLH%20CAR!5e0!3m2!1sfr!2sma!4v1741453156087!5m2!1sfr!2sma',
+        password : updatedSettings.password || '',
         maintenanceMode: updatedSettings.maintenance_mode === 1,
       });
       return updatedSettings;

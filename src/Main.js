@@ -37,6 +37,7 @@ import MitsubishiLogo from './assets/mitsubichiLogo.png';
 import ChevroletLogo from './assets/chevroletLogo.png';
 import BmwLogo from './assets/bmwLogo.png';
 import DfskLogo from './assets/dfskLogo.png';
+import HyundaiLogo from './assets/hyundaiLogo.png'
 import { useNavigate } from 'react-router-dom';
 
 // Utility function to format ISO date to MySQL-compatible format
@@ -465,6 +466,7 @@ const Main = () => {
                 'suzuki': SuzukiLogo,
                 'chevrolet': ChevroletLogo,
                 'dfsk': DfskLogo,
+                'hyundai' : HyundaiLogo,
             };
             return logoMap[brand] || DaciaLogo;
         };
@@ -750,6 +752,7 @@ const Main = () => {
             suzuki: SuzukiLogo,
             chevrolet: ChevroletLogo,
             dfsk: DfskLogo,
+            hyundai: HyundaiLogo,
         };
 
         return (
@@ -947,14 +950,14 @@ const Features = memo(() => {
             icon: <Car className="w-6 h-6" />, 
             emoji: "🚗", 
             title: "Livraison Gratuite", 
-            content: "Livraison et récupération à l'adresse de votre choix, sans frais supplémentaires dans un rayon de 50km.", 
+            content: "Livraison et récupération à l'adresse de votre choix, sans frais supplémentaires dans un rayon de 20km.", 
             color: "from-red-500 to-orange-500" 
         },
         { 
             icon: <Shield className="w-6 h-6" />, 
             emoji: "🛡️", 
             title: "Assurance Premium", 
-            content: "Couverture tous risques incluse dans chaque location avec assistance 24/7 et 0€ de franchise.", 
+            content: "Couverture tous risques incluse dans chaque location avec assistance 24/7 et 5000DH de franchise.", 
             color: "from-blue-400 to-cyan-500" 
         },
         { 
@@ -1793,24 +1796,48 @@ const Features = memo(() => {
     
                         {/* Legal section */}
                         <div className="md:block">
-                            <div 
-                                className="flex justify-between items-center border-b border-gray-700 pb-3 md:border-none md:pb-0 cursor-pointer group"
-                                onClick={() => toggleSection('legal')}
-                            >
-                                <h4 className="font-bold text-lg text-[#6171fe]">Légal</h4>
-                                <FaChevronDown 
-                                    className="md:hidden transform transition-transform duration-300 text-[#6171fe] group-hover:text-white" 
-                                    style={{ transform: openSection === 'legal' ? 'rotate(180deg)' : 'rotate(0deg)' }} 
-                                />
-                            </div>
-                            <ul 
-                                className={`${openSection === 'legal' ? 'max-h-96 mt-4' : 'max-h-0'} md:mt-4 md:max-h-96 overflow-hidden transition-all duration-300 ease-in-out space-y-3 text-sm text-gray-300 md:block`}
-                            >
-                                <li><a href="#" className="hover:text-[#0061ff] transition-colors duration-200 inline-block py-1">Conditions générales</a></li>
-                                <li><a href="#" className="hover:text-[#0061ff] transition-colors duration-200 inline-block py-1">Politique de confidentialité</a></li>
-                                <li><a href="#" className="hover:text-[#0061ff] transition-colors duration-200 inline-block py-1">Mentions légales</a></li>
-                            </ul>
-                        </div>
+                  <div
+                    className="flex justify-between items-center border-b border-gray-700 pb-3 md:border-none md:pb-0 cursor-pointer group"
+                    onClick={() => toggleSection('legal')}
+                  >
+                    <h4 className="font-bold text-lg text-[#6171fe]">Légal</h4>
+                    <FaChevronDown
+                      className="md:hidden transform transition-transform duration-300 text-[#6171fe] group-hover:text-white"
+                      style={{ transform: openSection === 'legal' ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                    />
+                  </div>
+                  <ul
+                    className={`${openSection === 'legal' ? 'max-h-96 mt-4' : 'max-h-0'} md:mt-4 md:max-h-96 overflow-hidden transition-all duration-300 ease-in-out space-y-3 text-sm text-gray-300 md:block`}
+                  >
+                    <li>
+                      <a
+                        href="/conditions-generales"
+                        rel="noopener noreferrer"
+                        className="hover:text-[#0061ff] transition-colors duration-200 inline-block py-1"
+                      >
+                        Conditions générales
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="/politique-de-confidentialite"
+                        rel="noopener noreferrer"
+                        className="hover:text-[#0061ff] transition-colors duration-200 inline-block py-1"
+                      >
+                        Politique de confidentialité
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="/mentions-legales"
+                        rel="noopener noreferrer"
+                        className="hover:text-[#0061ff] transition-colors duration-200 inline-block py-1"
+                      >
+                        Mentions légales
+                      </a>
+                    </li>
+                  </ul>
+                </div>
     
                         {/* Social media section */}
                         <div className="md:block">
