@@ -129,13 +129,16 @@ const AdminDashboard = () => {
     };
 
     const filteredCars = (cars || []).filter(car =>
-        car.name.toLowerCase().includes(searchTerm.toLowerCase()) || car.brand.toLowerCase().includes(searchTerm.toLowerCase())
+        car.name?.toLowerCase().includes(searchTerm.toLowerCase()) || car.brand?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     const filteredReservations = (reservations || []).filter(res =>
-        res.car_name?.toLowerCase().includes(searchTerm.toLowerCase()) || res.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) || res.status.toLowerCase().includes(searchTerm.toLowerCase())
+        res.car_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        res.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        res.status?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+    
     const filteredCustomers = (customers || []).filter(customer =>
-        customer.name.toLowerCase().includes(searchTerm.toLowerCase()) || customer.phone.includes(searchTerm)
+        customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) || customer.phone?.includes(searchTerm)
     );
 
     const stats = {
@@ -750,10 +753,15 @@ const AdminDashboard = () => {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Disponibilité</label>
-                                            <select name="available" defaultValue={editingItem?.available.toString() || 'true'} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700">
+                                            <select
+                                                name="available"
+                                                defaultValue={editingItem?.available?.toString() === '1' ? 'true' : 'false'}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700"
+                                                >
                                                 <option value="true">Disponible</option>
                                                 <option value="false">Non disponible</option>
-                                            </select>
+                                                </select>
+
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image du véhicule</label>
